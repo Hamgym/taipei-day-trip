@@ -10,7 +10,7 @@ with open("./data/taipei-attractions.json", encoding="utf-8") as file:
     record["name"] = item["name"]
     record["category"] = item["CAT"]
     record["description"] = item["description"]
-    record["address"] = item["address"]
+    record["address"] = item["address"].replace(" ", "")
     record["transport"] = item["direction"]
     record["mrt"] = item["MRT"]
     record["lat"] = item["latitude"]
@@ -27,18 +27,18 @@ from dotenv import load_dotenv
 load_dotenv()
 import os
 import mysql.connector
-mydb = mysql.connector.connect(
+cnx = mysql.connector.connect(
   user = os.getenv("DB_USER"),
   password = os.getenv("DB_PASSWORD"),
   host = "localhost",
-  database = "attractions"
+  database = "taipei_day_trip"
 )
-cursor = mydb.cursor()
+cursor = cnx.cursor()
 
 for item in data:
   cursor.execute(
     "INSERT INTO data VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
     (item["id"], item["name"], item["category"], item["description"], item["address"], item["transport"], item["mrt"], item["lat"], item["lng"], json.dumps(item["images"]))
   )
-mydb.commit()
-mydb.close()
+cnx.commit()
+cnx.close()

@@ -25,10 +25,10 @@ dbconfig = {
   "user": os.getenv("DB_USER"),
   "password": os.getenv("DB_PASSWORD"),
   "host": "localhost",
-  "database": "attractions"
+  "database": "taipei_day_trip"
 }
 cnxpool = MySQLConnectionPool(pool_size=5, **dbconfig)
-
+select_all = "SELECT attraction.id, attraction.name, category, description, address, transport, mrt.name, lat, lng, images FROM attraction LEFT JOIN mrt ON attraction.mrt=mrt.id "
 
 from fastapi.responses import JSONResponse
 from mysql.connector.errors import PoolError
@@ -45,17 +45,15 @@ async def get_attractions(page:int=Query(ge=0), keyword:str=Query(None)):
   limit = 12
   offset = page * limit
   if keyword == None:
-    cursor.execute("SELECT * FROM data LIMIT %s OFFSET %s", (limit, offset))
+    cursor.execute(select_all+"LIMIT %s OFFSET %s", (limit, offset))
   else:
     name = "%"+keyword+"%"
-    cursor.execute("SELECT * FROM data WHERE name LIKE %s OR mrt=%s LIMIT %s OFFSET %s", (name, keyword, limit, offset))
+    cursor.execute(select_all+"WHERE attraction.name LIKE %s OR mrt.name=%s LIMIT %s OFFSET %s", (name, keyword, limit, offset))
   records = cursor.fetchall()
-
   if len(records) < 12:
     next_page = None
   else:
     next_page = page + 1
-
   data = []
   tmp = {}
   for record in records:
@@ -71,7 +69,6 @@ async def get_attractions(page:int=Query(ge=0), keyword:str=Query(None)):
     tmp["images"] = json.loads(record[9])
     data.append(tmp.copy())
     tmp.clear()
-
   cnx.close()
   return {"nextPage": next_page, "data": data}
 
@@ -79,7 +76,7 @@ async def get_attractions(page:int=Query(ge=0), keyword:str=Query(None)):
 async def get_attraction_by_id(attractionId: int):
   cnx = cnxpool.get_connection()
   cursor = cnx.cursor()
-  cursor.execute("SELECT * FROM data WHERE id=%s", (attractionId,))
+  cursor.execute(select_all+"WHERE attraction.id=%s", (attractionId,))
   record = cursor.fetchone()
   if record == None:
     cnx.close()
@@ -103,7 +100,7 @@ async def get_attraction_by_id(attractionId: int):
 async def get_mrts():
   cnx = cnxpool.get_connection()
   cursor = cnx.cursor()
-  cursor.execute("SELECT mrt FROM data WHERE mrt IS NOT NULL GROUP BY mrt ORDER BY COUNT(name) DESC")
+  cursor.execute("SELECT name FROM mrt")
   records = cursor.fetchall()
   data = []
   for record in records:
