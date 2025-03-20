@@ -1,0 +1,527 @@
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+	scrollbar-width: none;
+	color: inherit;
+	font-size: inherit;
+	font-weight: inherit;
+	font-family: inherit;
+	font-optical-sizing: inherit;
+	text-decoration: none;
+}
+
+html {
+	color: #666666;
+	font-size: 16px;
+	font-weight: 500;
+	font-family: "Noto Sans TC", sans-serif;
+	font-optical-sizing: auto;
+	line-height: 1;
+}
+
+body {
+	position: relative;
+}
+
+.mask {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #000000;
+	opacity: 25%;
+	z-index: 20;
+	display: none;
+}
+
+
+
+.signin-dialog {
+	background-color: #FFFFFF;
+	border-radius: 5px;
+	position: fixed;
+	top: 80px;
+	left: calc(50% - 340px / 2);
+	width: 340px;
+	height: 275px;
+	z-index: 30;
+	box-shadow: 0 4px 60px #AAAAAA;
+	display: none;
+}
+
+.signin-dialog .decorator-bar {
+	background-image: linear-gradient(to left, #337788, #66AABB);
+	border-radius: 5px 5px 0 0;
+	width: 100%;
+	height: 10px;
+}
+
+.signin-dialog .close {
+	width: 30px;
+	height: 30px;
+	position: absolute;
+	top: 20px;
+	left: 300px;
+	background-image: url(../images/icon_close.svg);
+	background-repeat: no-repeat;
+	background-position: center;
+	z-index: 40;
+}
+
+.signin-dialog .close:hover {
+	cursor: pointer;
+}
+
+.signin-dialog .signin-main {
+	width: 310px;
+	height: 234px;
+	position: relative;
+	top: 15px;
+	left: 15px;
+}
+
+.signin-main h3 {
+	font-size: 24px;
+	font-weight: 700;
+	height: 27px;
+	line-height: 27px;
+	text-align: center;
+	margin-bottom: 15px;
+}
+
+.signin-main form {
+	height: 192px;
+}
+
+.signin-main input {
+	width: 100%;
+	height: 47px;
+	border-radius: 5px;
+	border: 1px solid #CCCCCC;
+	padding: 0px 14px 2px 14px;
+	margin-bottom: 10px;
+}
+
+.signin-main input[type="button"] {
+	background-color: #448899;
+	color: #FFFFFF;
+	font-size: 19px;
+	font-weight: 400;
+	height: 46px;
+	padding-top: 2px;
+	border: none;
+}
+
+.signin-main input[type="button"]:hover {
+	cursor: pointer;
+}
+
+.signin-main .signup {
+	height: 22px;
+	line-height: 22px;
+	text-align: center;
+	max-width: fit-content;
+	margin: auto;
+}
+
+.signin-main .signup:hover {
+	cursor: pointer;
+}
+
+
+
+.signup-dialog {
+	background-color: #FFFFFF;
+	border-radius: 5px;
+	position: fixed;
+	top: 80px;
+	left: calc(50% - 340px / 2);
+	width: 340px;
+	height: 332px;
+	z-index: 30;
+	box-shadow: 0 4px 60px #AAAAAA;
+	display: none;
+}
+
+.signup-dialog .decorator-bar {
+	background-image: linear-gradient(to left, #337788, #66AABB);
+	border-radius: 5px 5px 0 0;
+	width: 100%;
+	height: 10px;
+}
+
+.signup-dialog .close {
+	width: 30px;
+	height: 30px;
+	position: absolute;
+	top: 20px;
+	left: 300px;
+	background-image: url(../images/icon_close.svg);
+	background-repeat: no-repeat;
+	background-position: center;
+	z-index: 40;
+}
+
+.signup-dialog .close:hover {
+	cursor: pointer;
+}
+
+.signup-dialog .signup-main {
+	width: 310px;
+	height: 291px;
+	position: relative;
+	top: 15px;
+	left: 15px;
+}
+
+.signup-main h3 {
+	font-size: 24px;
+	font-weight: 700;
+	height: 27px;
+	line-height: 27px;
+	text-align: center;
+	margin-bottom: 15px;
+}
+
+.signup-main form {
+	height: 249px;
+}
+
+.signup-main input {
+	width: 100%;
+	height: 47px;
+	border-radius: 5px;
+	border: 1px solid #CCCCCC;
+	padding: 0px 14px 2px 14px;
+	margin-bottom: 10px;
+}
+
+.signup-main input[type="button"] {
+	background-color: #448899;
+	color: #FFFFFF;
+	font-size: 19px;
+	font-weight: 340;
+	height: 46px;
+	padding-top: 2px;
+	border: none;
+}
+
+.signup-main input[type="button"]:hover {
+	cursor: pointer;
+}
+
+.signup-main .signin {
+	height: 22px;
+	line-height: 22px;
+	text-align: center;
+	max-width: fit-content;
+	margin: auto;
+}
+
+.signup-main .signin:hover {
+	cursor: pointer;
+}
+
+
+
+.navigation {
+	background-color: #FFFFFF;
+	height: 54px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+}
+
+.navigation>div {
+	width: 1200px;
+	height: 34px;
+	display: flex;
+	justify-content: space-between;
+	padding: 0 10px;
+}
+
+.navigation h2 {
+	width: 150px;
+	font-weight: 700;
+	font-size: 30px;
+	line-height: 34px;
+	color: #448899;
+}
+
+.navigation h2:hover {
+	cursor: pointer;
+}
+
+.navigation .container {
+	width: 175px;
+	display: flex;
+}
+
+.navigation a {
+	width: 84px;
+	padding: 10px;
+	line-height: 12px;
+	color: #666666;
+}
+
+.navigation .sign {
+	width: 91px;
+	padding: 10px;
+	line-height: 12px;
+	color: #666666;
+}
+
+.navigation .sign:hover {
+	cursor: pointer;
+}
+
+
+
+.hero-section {
+	height: 320px;
+	background-image: url(../images/welcome.svg);
+	background-repeat: no-repeat;
+	background-position: top;
+	background-size: cover;
+	padding-top: 75px;
+}
+
+.slogan {
+	max-width: 1220px;
+	height: 169px;
+	margin: auto;
+	padding: 10px 20px;
+}
+
+.slogan>div:first-child {
+	height: 78px;
+	margin-bottom: 25px;
+}
+
+.slogan h1 {
+	height: 41px;
+	font-weight: 580;
+	font-size: 28px;
+	line-height: 40px;
+	color: #F8F8F8;
+	text-shadow: 0 0 30px #AABBCC;
+	margin-bottom: 15px;
+}
+
+.slogan p {
+	height: 22px;
+	line-height: 22px;
+	font-weight: 580;
+	color: #F8F8F8;
+}
+
+.slogan>div:last-child {
+	height: 46px;
+}
+
+.slogan form {
+	display: flex;
+	max-width: 460px;
+	height: 46px;
+	box-shadow: 0 0 20px #AABBCC;
+}
+
+.slogan input {
+	width: 0;
+	padding: 15px;
+	border: none;
+	border-radius: 5px 0 0 5px;
+	font-weight: 700;
+	flex-grow: 1;
+	flex-shrink: 1;
+}
+
+.slogan input:focus-visible {
+	outline: none;
+}
+
+.slogan button {
+	width: 60px;
+	border: none;
+	border-radius: 0 5px 5px 0;
+	padding: 8px 15px;
+	background-image: url(../images/btn.svg);
+}
+
+.slogan button:hover {
+	cursor: pointer;
+}
+
+
+
+.main {
+	padding: 40px 0;
+}
+
+.main .list-bar {
+	background-color: #FFFFFF;
+	margin: auto;
+	max-width: 1200px;
+	height: 70px;
+	display: flex;
+}
+
+.list-bar .left-container {
+	width: 47px;
+	height: 50px;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	flex-shrink: 0;
+}
+
+.list-bar button.left {
+	background-color: transparent;
+	background-image: url(../images/arrowLeft.svg);
+	border: none;
+	width: 32px;
+	height: 32px;
+}
+
+.list-bar button.left:hover {
+	cursor: pointer;
+}
+
+.list-bar .middle-container {
+	width: 1106px;
+	height: 50px;
+	padding: 13px 10px;
+	overflow-x: hidden;
+}
+
+.list-bar .list-item {
+	background-color: #FFFFFF;
+	width: 100%;
+	height: 24px;
+	display: flex;
+	overflow-x: scroll;
+}
+
+.list-bar .list-item div {
+	margin: 0 15px;
+	height: 24px;
+	line-height: 22px;
+	text-wrap-mode: nowrap;
+}
+
+.list-bar .list-item div:hover {
+	cursor: pointer;
+}
+
+.list-bar .right-container {
+	width: 47px;
+	height: 50px;
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+	flex-shrink: 0;
+}
+
+.list-bar button.right {
+	background-color: transparent;
+	background-image: url(../images/arrowRight.svg);
+	border: none;
+	width: 32px;
+	height: 32px;
+}
+
+.list-bar button.right:hover {
+	cursor: pointer;
+}
+
+.main .attractions {
+	background-color: white;
+	max-width: 1200px;
+	margin: auto;
+	display: flex;
+	justify-content: center;
+	flex-wrap: wrap;
+}
+
+.attractions .attraction {
+	width: 270px;
+	height: 242px;
+	margin: 15px;
+	position: relative;
+}
+
+.attractions .attraction::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	border: 1px solid #E8E8E8;
+	border-radius: 5px;
+}
+
+.attraction .container {
+	width: 100%;
+	height: calc(100% - 45px);
+	position: relative;
+	border-radius: 5px 5px 0 0;
+}
+
+.attraction img {
+	border-radius: inherit;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.attraction p.name {
+	background-color: #00000099;
+	width: 100%;
+	height: 40px;
+	position: absolute;
+	bottom: 0;
+	padding: 10px;
+	color: #FFFFFF;
+	line-height: 20px;
+	font-weight: 600;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.attraction .details {
+	height: 45px;
+	border-radius: 0 0 5px 5px;
+	padding: 10px;
+	display: flex;
+	justify-content: space-between;
+}
+
+.attraction .details p {
+	line-height: 24px;
+	color: #757575;
+}
+
+
+
+.footer {
+	background-color: #757575;
+	height: 104px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.footer p {
+	color: #FFFFFF;
+	font-weight: 600;
+	line-height: 38px;
+	height: 40px;
+	letter-spacing: 0.1px;
+}
