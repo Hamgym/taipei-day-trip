@@ -1,0 +1,4 @@
+.attractions .attraction {
+	width: calc(100% - 30px);
+	height: 280px;
+}

@@ -17,6 +17,10 @@ async def thankyou(request: Request):
   return FileResponse("./static/thankyou.html", media_type="text/html")
 
 
+from fastapi.staticfiles import StaticFiles
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
 from dotenv import load_dotenv
 load_dotenv()
 import os
