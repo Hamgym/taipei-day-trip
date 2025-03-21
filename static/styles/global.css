@@ -2,7 +2,7 @@
 	box-sizing: border-box;
 	margin: 0;
 	padding: 0;
-	scrollbar-width: none;
+	/* scrollbar-width: none; */
 	color: inherit;
 	font-size: inherit;
 	font-weight: inherit;
@@ -405,6 +405,7 @@ body {
 	height: 24px;
 	display: flex;
 	overflow-x: scroll;
+	scrollbar-width: none;
 }
 
 .list-bar .list-item div {

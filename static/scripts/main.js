@@ -50,7 +50,8 @@ window.addEventListener("keydown", function (event) {
 });
 
 
-let nextPage = 0;
+let loadedPage = [];
+let nextPage = null;
 let keyword = "";
 init();
 async function init() {
@@ -73,9 +74,12 @@ async function init() {
 			list.appendChild(div);
 		}
 	}
+	loadedPage.length = 0;
+	nextPage = 0;
 	nextPage = await loadOne(nextPage, keyword);
 }
 async function loadOne(page, keyword) {
+	loadedPage.push(page);
 	let res = await fetch(`./api/attractions?page=${page}&keyword=${keyword}`);
 	let data_raw = await res.json();
 	let nextPage = data_raw.nextPage;
@@ -100,10 +104,11 @@ async function loadOne(page, keyword) {
 
 
 const intersectionObserver = new IntersectionObserver(async (entries) => {
-	if (entries[0].intersectionRatio <= 0 || nextPage == null || nextPage == 0) {
+	if (entries[0].intersectionRatio <= 0 || nextPage == null || loadedPage.includes(nextPage)) {
 		return;
+	} else {
+		nextPage = await loadOne(nextPage, keyword);
 	}
-	nextPage = await loadOne(nextPage, keyword);
 });
 intersectionObserver.observe(document.querySelector("div.footer"));
 
@@ -111,7 +116,6 @@ intersectionObserver.observe(document.querySelector("div.footer"));
 let searchBtn = document.querySelector(".slogan button");
 let searchField = document.querySelector(".slogan input");
 searchBtn.addEventListener("click", async function () {
-	nextPage = 0;
 	keyword = searchField.value;
 	let attractions = document.querySelector("div.attractions");
 	while (attractions.children.length > 1) {
