@@ -1,69 +1,71 @@
-let title = document.querySelector(".navigation h2");
-title.addEventListener("click", function () {
-	window.location.href = "/";
-});
+frontInit();
+function frontInit() {
+	let title = document.querySelector(".navigation h2");
+	title.addEventListener("click", function () {
+		window.location.href = "/";
+	});
 
+	let list = document.querySelector(".list-item");
+	let leftBtn = document.querySelector("button.left");
+	leftBtn.addEventListener("click", function () {
+		list.scrollBy({ left: -200, behavior: "smooth" });
+	});
+	let rightBtn = document.querySelector("button.right");
+	rightBtn.addEventListener("click", function () {
+		list.scrollBy({ left: 200, behavior: "smooth" });
+	});
 
-let list = document.querySelector(".list-item");
-let leftBtn = document.querySelector("button.left");
-leftBtn.addEventListener("click", function () {
-	list.scrollBy({ left: -200, behavior: "smooth" });
-});
-let rightBtn = document.querySelector("button.right");
-rightBtn.addEventListener("click", function () {
-	list.scrollBy({ left: 200, behavior: "smooth" });
-});
-
-
-let mask = document.querySelector("div.mask");
-let signLink = document.querySelector(".navigation div.sign");
-let signinLink = document.querySelector(".signup-main div.signin");
-let signupLink = document.querySelector(".signin-main div.signup");
-let signinDialog = document.querySelector("div.signin-dialog");
-let signupDialog = document.querySelector("div.signup-dialog");
-signLink.addEventListener("click", function () {
-	mask.style.display = "block";
-	signinDialog.style.display = "block";
-});
-signinLink.addEventListener("click", function () {
-	signinDialog.style.display = "block";
-	signupDialog.style.display = "none";
-});
-signupLink.addEventListener("click", function () {
-	signinDialog.style.display = "none";
-	signupDialog.style.display = "block";
-});
-let closeBtns = document.querySelectorAll("div.close");
-for (let closeBtn of closeBtns) {
-	closeBtn.addEventListener("click", function () {
-		mask.style.display = "none";
-		signinDialog.style.display = "none";
+	let mask = document.querySelector("div.mask");
+	let signLink = document.querySelector(".navigation div.sign");
+	let signinLink = document.querySelector(".signup-main div.signin");
+	let signupLink = document.querySelector(".signin-main div.signup");
+	let signinDialog = document.querySelector("div.signin-dialog");
+	let signupDialog = document.querySelector("div.signup-dialog");
+	signLink.addEventListener("click", function () {
+		mask.style.display = "block";
+		signinDialog.style.display = "block";
+	});
+	signinLink.addEventListener("click", function () {
+		signinDialog.style.display = "block";
 		signupDialog.style.display = "none";
 	});
-}
-window.addEventListener("keydown", function (event) {
-	if (event.key == "Escape") {
-		mask.style.display = "none";
+	signupLink.addEventListener("click", function () {
 		signinDialog.style.display = "none";
-		signupDialog.style.display = "none";
+		signupDialog.style.display = "block";
+	});
+	let closeBtns = document.querySelectorAll("div.close");
+	for (let closeBtn of closeBtns) {
+		closeBtn.addEventListener("click", function () {
+			mask.style.display = "none";
+			signinDialog.style.display = "none";
+			signupDialog.style.display = "none";
+		});
 	}
-});
+	window.addEventListener("keydown", function (event) {
+		if (event.key == "Escape") {
+			mask.style.display = "none";
+			signinDialog.style.display = "none";
+			signupDialog.style.display = "none";
+		}
+	});
+}
 
 
-let loadedPage = [];
-let nextPage = null;
 let keyword = "";
-init();
-async function init() {
-	let res = await fetch("./api/mrts");
-	let data_raw = await res.json();
-	let mrts = data_raw.data;
+let loading = false;
+let nextPage = null;
+let loadedPage = [];
+loadInit();
+async function loadInit() {
 	let list = document.querySelector("div.list-item");
-	let div_proto = list.firstElementChild;
-	let searchBtn = document.querySelector(".slogan button");
 	if (list.children.length == 1) {
+		let res = await fetch("./api/mrts");
+		let rawData = await res.json();
+		let mrts = rawData.data;
+		let protoDiv = list.firstElementChild;
+		let searchBtn = document.querySelector(".slogan button");
 		for (let mrt of mrts) {
-			let div = div_proto.cloneNode(true);
+			let div = protoDiv.cloneNode(true);
 			div.style.display = "block";
 			div.innerText = mrt;
 			let searchField = document.querySelector(".slogan input");
@@ -74,16 +76,23 @@ async function init() {
 			list.appendChild(div);
 		}
 	}
-	loadedPage.length = 0;
+	let attractions = document.querySelector("div.attractions");
+	while (attractions.children.length > 1) {
+		attractions.removeChild(attractions.lastElementChild);
+	}
 	nextPage = 0;
-	nextPage = await loadOne(nextPage, keyword);
+	loadedPage.length = 0;
+	await loadOne();
 }
-async function loadOne(page, keyword) {
-	loadedPage.push(page);
-	let res = await fetch(`./api/attractions?page=${page}&keyword=${keyword}`);
-	let data_raw = await res.json();
-	let nextPage = data_raw.nextPage;
-	let data_page = data_raw.data;
+async function loadOne() {
+	if (nextPage == null || loadedPage.includes(nextPage) || loading) {
+		return;
+	}
+	loading = true;
+	loadedPage.push(nextPage);
+	let res = await fetch(`./api/attractions?page=${nextPage}&keyword=${keyword}`);
+	let rawData = await res.json();
+	let data_page = rawData.data;
 	let proto_attraction = document.querySelector("div.attraction");
 	let attractions = document.querySelector("div.attractions");
 	for (let data of data_page) {
@@ -99,29 +108,29 @@ async function loadOne(page, keyword) {
 		mrt.innerText = data.mrt;
 		attractions.appendChild(attraction);
 	}
-	return nextPage
+	loading = false;
+	nextPage = rawData.nextPage;
 }
 
 
-const intersectionObserver = new IntersectionObserver(async (entries) => {
-	if (entries[0].intersectionRatio <= 0 || nextPage == null || loadedPage.includes(nextPage)) {
+let footerObserver = new IntersectionObserver(async (entries) => {
+	if (entries[0].intersectionRatio <= 0 || nextPage == null || loadedPage.includes(nextPage) || loading) {
 		return;
 	} else {
-		nextPage = await loadOne(nextPage, keyword);
+		await loadOne();
 	}
 });
-intersectionObserver.observe(document.querySelector("div.footer"));
+footerObserver.observe(document.querySelector("div.footer"));
 
 
 let searchBtn = document.querySelector(".slogan button");
 let searchField = document.querySelector(".slogan input");
 searchBtn.addEventListener("click", async function () {
-	keyword = searchField.value;
-	let attractions = document.querySelector("div.attractions");
-	while (attractions.children.length > 1) {
-		attractions.removeChild(attractions.lastElementChild);
+	if (loading) {
+		return;
 	}
-	await init();
+	keyword = searchField.value;
+	await loadInit();
 });
 searchField.addEventListener("keydown", function (event) {
 	if (event.key == "Enter") {
