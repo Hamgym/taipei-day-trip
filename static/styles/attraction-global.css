@@ -2,13 +2,13 @@
 	box-sizing: border-box;
 	margin: 0;
 	padding: 0;
-	/* scrollbar-width: none; */
 	color: inherit;
 	font-size: inherit;
 	font-weight: inherit;
 	font-family: inherit;
 	font-optical-sizing: inherit;
 	text-decoration: none;
+	scrollbar-width: none;
 }
 
 html {
@@ -235,6 +235,7 @@ body {
 	position: sticky;
 	top: 0;
 	z-index: 10;
+	outline: 0.5px solid #E8E8E8;
 }
 
 .navigation>div {
@@ -278,4 +279,271 @@ body {
 
 .navigation .sign:hover {
 	cursor: pointer;
+}
+
+
+
+section {
+	/* background-color: aqua; */
+	max-width: 1200px;
+	height: 400px;
+	margin: auto;
+	margin-top: 40px;
+	padding: 0 15px;
+	display: flex;
+	justify-content: space-between;
+}
+
+.picture {
+	background-color: antiquewhite;
+	width: 540px;
+	height: 100%;
+	border-radius: 5px;
+	position: relative;
+}
+
+.picture img {
+	border-radius: inherit;
+}
+
+.picture .left-arrow {
+	/* background-color: white; */
+	background-image: url(/static/images/btn_leftArrow.svg);
+	opacity: 0.75;
+	width: 36px;
+	height: 36px;
+	position: absolute;
+	left: 10px;
+	top: 182px;
+}
+
+.picture .right-arrow {
+	/* background-color: white; */
+	background-image: url(/static/images/btn_rightArrow.svg);
+	opacity: 0.75;
+	width: 36px;
+	height: 36px;
+	position: absolute;
+	right: 10px;
+	top: 182px;
+}
+
+.picture .circles {
+	/* background-color: red; */
+	width: 72px;
+	height: 12px;
+	position: absolute;
+	left: calc(50% - 72px / 2);
+	bottom: 10px;
+	display: flex;
+}
+
+.picture .circle {
+	background-color: rgba(255, 255, 255, 0.7);
+	width: 12px;
+	height: 100%;
+	border-radius: 50%;
+
+	margin: 0 6px;
+}
+
+.picture .circle:first-child {
+	background-color: rgba(0, 0, 0, 0.7);
+	border: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+.profile {
+	/* background-color: antiquewhite; */
+	width: 600px;
+	height: 400px;
+	/* margin-left: 30px; */
+}
+
+.profile h3 {
+	font-size: 24px;
+	font-weight: 700;
+	height: 33px;
+	line-height: 33px;
+}
+
+.profile>p {
+	height: 22px;
+	line-height: 22px;
+	margin-top: 15px;
+}
+
+.booking {
+	background-color: #E8E8E8;
+	height: 302px;
+	margin-top: 20px;
+	border-radius: 5px;
+	padding: 15px 20px;
+	font-weight: 700;
+}
+
+.booking>p {
+	margin-bottom: 15px;
+	height: 22px;
+	line-height: 22px;
+	font-weight: 700;
+}
+
+.booking>p:nth-child(2) {
+	margin-bottom: 15px;
+	height: 24px;
+	line-height: 24px;
+	font-weight: 500;
+}
+
+.booking div {
+	margin-bottom: 15px;
+	display: flex;
+	align-items: center;
+}
+
+.booking .date {
+	height: 35px;
+}
+
+.booking .date label {
+	padding-bottom: 1px;
+}
+
+
+
+.booking input[type="date"] {
+	height: 100%;
+	/* line-height: 1rem; */
+	/* width: 193px; */
+	margin-left: 6px;
+	border: none;
+	padding: 5px 7px 5px 5px;
+}
+
+.booking .time {
+	height: 22px;
+}
+
+.booking .time input {
+	width: 22px;
+	height: 100%;
+	margin-left: 11px;
+	margin-right: 4px;
+	position: relative;
+	appearance: none;
+	background-color: white;
+	border-radius: 50%;
+}
+
+.booking .time input:checked::after {
+	content: "";
+	background-color: #448899;
+	position: absolute;
+	top: 2px;
+	right: 2px;
+	bottom: 2px;
+	left: 2px;
+	border-radius: 50%;
+}
+
+.booking .time label:nth-child(n+2) {
+	font-weight: 500;
+	padding-bottom: 2px;
+	margin-right: 7px;
+}
+
+.booking .price {
+	height: 22px;
+}
+
+.booking .price p {
+	height: 22px;
+	line-height: 22px;
+}
+
+.booking .price p:nth-child(2) {
+	font-weight: 500;
+	padding-left: 6px;
+	padding-bottom: 2px;
+	height: 24px;
+}
+
+.booking input[type="submit"] {
+	background-color: #448899;
+	color: #FFFFFF;
+	font-weight: 400;
+	width: 154px;
+	height: 36px;
+	line-height: 36px;
+	margin-top: 10px;
+	margin-left: 0;
+	font-size: 19px;
+	border-radius: 5px;
+	border: none;
+}
+
+
+
+div.separator {
+	/* background-color: aqua; */
+	max-width: 1200px;
+	height: 40.5px;
+	margin: auto;
+	border-bottom: 1px solid #E8E8E8;
+}
+
+
+
+.info {
+	/* background-color: aqua; */
+	max-width: 1200px;
+	height: 362px;
+	margin: auto;
+	margin-top: 40px;
+	margin-bottom: 40px;
+	padding: 10px;
+	padding-top: 9px;
+}
+
+.info p:nth-child(1) {
+	line-height: 1.2;
+	font-weight: 400;
+	margin-bottom: 40px;
+}
+
+.info h3 {
+	height: 32px;
+	line-height: 32px;
+	font-weight: 700;
+}
+
+.info p:nth-child(3) {
+	font-weight: 400;
+	padding: 4px 0;
+	margin-bottom: 20px;
+}
+
+.info p:nth-child(5) {
+	font-weight: 400;
+	padding-bottom: 80px;
+	line-height: 1.5;
+	/* margin-bottom: 20px; */
+}
+
+
+
+.footer {
+	background-color: #757575;
+	height: 104px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.footer p {
+	color: #FFFFFF;
+	font-weight: 600;
+	line-height: 38px;
+	height: 40px;
+	letter-spacing: 0.1px;
 }
