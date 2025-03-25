@@ -39,3 +39,87 @@ function frontInit() {
 		}
 	});
 }
+
+loadOne();
+async function loadOne() {
+	let id = location.pathname.slice(12);
+	let res = await fetch(`/api/attraction/${id}`);
+	let rawData = await res.json();
+	let data = rawData.data;
+	let slideShow = document.querySelector(".picture");
+	let protoImg = slideShow.querySelector("img");
+	let circles = slideShow.querySelector(".circles");
+	let protoCir = slideShow.querySelector(".circle");
+	let images = data.images;
+	for (let url of images) {
+		let img = protoImg.cloneNode(true);
+		img.setAttribute("src", url);
+		slideShow.appendChild(img);
+		let cir = protoCir.cloneNode(true);
+		circles.appendChild(cir);
+	}
+	protoImg.remove();
+	protoCir.remove();
+	let imgs = slideShow.querySelectorAll("img");
+	imgs[0].setAttribute("style", "display: block");
+	let cirs = slideShow.querySelectorAll(".circle");
+	cirs[0].setAttribute("class", "circle black");
+	let right = slideShow.querySelector(".right-arrow");
+	right.addEventListener("click", () => {
+		let now = slideShow.querySelector(`img[style="display: block"]`);
+		now.setAttribute("style", "display: none");
+		let next = now.nextElementSibling;
+		if (next == null) {
+			next = imgs[0];
+		}
+		next.setAttribute("style", "display: block");
+		let cirNow = circles.querySelector(`div[class="circle black"]`);
+		cirNow.setAttribute("class", "circle");
+		let cirNext = cirNow.nextElementSibling;
+		if (cirNext == null) {
+			cirNext = cirs[0];
+		}
+		cirNext.setAttribute("class", "circle black");
+	});
+	let left = slideShow.querySelector(".left-arrow");
+	left.addEventListener("click", () => {
+		let now = slideShow.querySelector(`img[style="display: block"]`);
+		now.setAttribute("style", "display: none");
+		let prev = now.previousElementSibling;
+		if (prev.tagName == "DIV") {
+			prev = imgs[imgs.length - 1];
+		}
+		prev.setAttribute("style", "display: block");
+		let cirNow = circles.querySelector(`div[class="circle black"]`);
+		cirNow.setAttribute("class", "circle");
+		let cirPrev = cirNow.previousElementSibling;
+		if (cirPrev == null) {
+			cirPrev = cirs[cirs.length - 1];
+		}
+		cirPrev.setAttribute("class", "circle black");
+	});
+
+	let name = document.querySelector(".profile>h3");
+	name.innerText = data.name;
+	let subtitle = document.querySelector(".profile>p");
+	subtitle.innerText = `${data.category} at ${data.mrt}`;
+	let description = document.querySelector(".info p:nth-child(1)");
+	description.innerText = data.description;
+	let address = document.querySelector(".info p:nth-child(3)");
+	address.innerText = data.address;
+	let transport = document.querySelector(".info p:nth-child(5)");
+	transport.innerText = data.transport;
+
+	let price = document.querySelector(".price p:last-child");
+	let radioFirst = document.querySelector("#morning");
+	radioFirst.checked = true;
+	radioFirst.addEventListener("focus", () => {
+		price.innerText = "新台幣 2000 元";
+	});
+	let radioSecond = document.querySelector("#afternoon");
+	radioSecond.addEventListener("focus", () => {
+		price.innerText = "新台幣 2500 元";
+	});
+	console.log(data);
+}
+

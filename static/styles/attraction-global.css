@@ -8,7 +8,7 @@
 	font-family: inherit;
 	font-optical-sizing: inherit;
 	text-decoration: none;
-	scrollbar-width: none;
+	/* scrollbar-width: none; */
 }
 
 html {
@@ -300,11 +300,15 @@ section {
 	position: relative;
 	margin-right: 15px;
 	flex-shrink: 1;
+	display: flex;
+	overflow-x: hidden;
 }
 
 .picture img {
 	border-radius: inherit;
 	width: 100%;
+	/* width: 0;
+	flex-grow: 1; */
 	height: 100%;
 	object-fit: cover;
 }
@@ -333,12 +337,19 @@ section {
 
 .picture .circles {
 	/* background-color: red; */
-	width: 72px;
+	/* width: 72px; */
 	height: 12px;
 	position: absolute;
-	left: calc(50% - 72px / 2);
+	/* left: calc(50% - 72px / 2); */
+	left: 50%;
+	transform: translateX(-50%);
 	bottom: 10px;
 	display: flex;
+}
+
+.picture .circles .black {
+	background-color: rgba(0, 0, 0, 0.7);
+	border: 1px solid rgba(255, 255, 255, 0.85);
 }
 
 .picture .circle {
@@ -346,14 +357,10 @@ section {
 	width: 12px;
 	height: 100%;
 	border-radius: 50%;
-
 	margin: 0 6px;
 }
 
-.picture .circle:first-child {
-	background-color: rgba(0, 0, 0, 0.7);
-	border: 1px solid rgba(255, 255, 255, 0.85);
-}
+
 
 .profile {
 	/* background-color: antiquewhite; */
@@ -501,12 +508,13 @@ div.separator {
 .info {
 	/* background-color: aqua; */
 	max-width: 1200px;
-	height: 362px;
+	/* height: 362px; */
 	margin: auto;
 	margin-top: 40px;
-	margin-bottom: 40px;
+	/* margin-bottom: 40px; */
 	padding: 10px;
 	padding-top: 9px;
+	padding-bottom: 80px;
 }
 
 .info p:nth-child(1) {
@@ -529,7 +537,7 @@ div.separator {
 
 .info p:nth-child(5) {
 	font-weight: 400;
-	padding-bottom: 80px;
+	/* padding-bottom: 80px; */
 	line-height: 1.5;
 	/* margin-bottom: 20px; */
 }
@@ -542,6 +550,7 @@ div.separator {
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	margin-top: 40px;
 }
 
 .footer p {

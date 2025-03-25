@@ -98,6 +98,10 @@ async function loadOne() {
 	for (let data of pageData) {
 		let attraction = protoAttraction.cloneNode(true);
 		attraction.style.display = "block";
+		let container = attraction.querySelector(".container");
+		container.addEventListener("click", () => {
+			window.location.href = `/attraction/${data.id}`;
+		});
 		let name = attraction.querySelector("p.name");
 		name.innerText = data.name;
 		let category = attraction.querySelector("p.category");
@@ -134,6 +138,7 @@ searchBtn.addEventListener("click", function () {
 searchField.addEventListener("keydown", function (event) {
 	if (event.key == "Enter") {
 		event.preventDefault();
+		searchBtn.click();
 	}
 });
 
