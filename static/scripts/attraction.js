@@ -51,11 +51,23 @@ async function loadOne() {
 	let circles = slideShow.querySelector(".circles");
 	let protoCir = slideShow.querySelector(".circle");
 	let images = data.images;
+	let count = 0;
 	for (let url of images) {
 		let img = protoImg.cloneNode(true);
 		img.setAttribute("src", url);
 		slideShow.appendChild(img);
 		let cir = protoCir.cloneNode(true);
+		cir.setAttribute("id", count);
+		cir.addEventListener("click", (event) => {
+			let id = Number(event.target.id);
+			for (let i = 0; i < circles.children.length; i++) {
+				circles.children[i].setAttribute("class", "circle");
+				slideShow.children[i + 3].setAttribute("style", "display: none");
+			}
+			circles.children[id].setAttribute("class", "circle black");
+			slideShow.children[id + 3].setAttribute("style", "display: block");;
+		});
+		count++;
 		circles.appendChild(cir);
 	}
 	protoImg.remove();
@@ -112,14 +124,17 @@ async function loadOne() {
 
 	let price = document.querySelector(".price p:last-child");
 	let radioFirst = document.querySelector("#morning");
-	radioFirst.checked = true;
-	radioFirst.addEventListener("focus", () => {
+	radioFirst.addEventListener("click", () => {
 		price.innerText = "新台幣 2000 元";
 	});
 	let radioSecond = document.querySelector("#afternoon");
-	radioSecond.addEventListener("focus", () => {
+	radioSecond.addEventListener("click", () => {
 		price.innerText = "新台幣 2500 元";
 	});
-	console.log(data);
+
+	let form = document.querySelector(`[class="booking"]`);
+	form.addEventListener("submit", (event) => {
+		event.preventDefault();
+	});
 }
 
