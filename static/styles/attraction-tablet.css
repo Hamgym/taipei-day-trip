@@ -1,0 +1,52 @@
+section {
+	margin-top: 30px;
+	padding: 25px;
+	padding-bottom: 0;
+}
+
+.picture {
+	width: 100%;
+	margin-right: 25px;
+	margin-bottom: 15px;
+}
+
+.profile {
+	width: 100%;
+}
+
+.profile>h3 {
+	padding-left: 10px;
+}
+
+.profile>p {
+	padding-left: 10px;
+}
+
+.profile .booking {
+	margin-top: 28px;
+}
+
+.info {
+	padding-left: 25px;
+	padding-right: 25px;
+	height: auto;
+}
+
+@media screen and (width <=830px) {
+	section {
+		margin-top: 0;
+		flex-wrap: wrap;
+	}
+
+	.picture {
+		margin-right: 0;
+	}
+
+	.profile>h3 {
+		padding-left: 20px;
+	}
+
+	.profile>p {
+		padding-left: 20px;
+	}
+}
