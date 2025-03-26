@@ -293,7 +293,6 @@ section {
 }
 
 .picture {
-	/* background-color: antiquewhite; */
 	width: 540px;
 	height: 400px;
 	border-radius: 5px;
@@ -307,14 +306,11 @@ section {
 .picture img {
 	border-radius: inherit;
 	width: 100%;
-	/* width: 0;
-	flex-grow: 1; */
 	height: 100%;
 	object-fit: cover;
 }
 
 .picture .left-arrow {
-	/* background-color: white; */
 	background-image: url(/static/images/btn_leftArrow.svg);
 	opacity: 0.75;
 	width: 36px;
@@ -324,8 +320,11 @@ section {
 	top: 182px;
 }
 
+.picture .left-arrow:hover {
+	cursor: pointer;
+}
+
 .picture .right-arrow {
-	/* background-color: white; */
 	background-image: url(/static/images/btn_rightArrow.svg);
 	opacity: 0.75;
 	width: 36px;
@@ -335,15 +334,17 @@ section {
 	top: 182px;
 }
 
+.picture .right-arrow:hover {
+	cursor: pointer;
+}
+
 .picture .circles {
-	/* width: 300px; */
 	height: 12px;
 	position: absolute;
 	left: 50%;
 	transform: translateX(-50%);
 	bottom: 10px;
 	display: flex;
-	/* flex-wrap: wrap; */
 }
 
 .picture .circles .black {
@@ -362,10 +363,8 @@ section {
 
 
 .profile {
-	/* background-color: antiquewhite; */
 	width: 600px;
 	height: 400px;
-	/* margin-left: 30px; */
 	flex-shrink: 1;
 }
 
@@ -423,8 +422,6 @@ section {
 
 .booking input[type="date"] {
 	height: 100%;
-	/* line-height: 1rem; */
-	/* width: 193px; */
 	margin-left: 6px;
 	border: none;
 	padding: 5px 7px 5px 5px;
@@ -499,7 +496,6 @@ section {
 
 
 div.separator {
-	/* background-color: aqua; */
 	max-width: 1200px;
 	height: 40.5px;
 	margin: auto;
@@ -509,12 +505,9 @@ div.separator {
 
 
 .info {
-	/* background-color: aqua; */
 	max-width: 1200px;
-	/* height: 362px; */
 	margin: auto;
 	margin-top: 40px;
-	/* margin-bottom: 40px; */
 	padding: 10px;
 	padding-top: 9px;
 	padding-bottom: 80px;
@@ -540,9 +533,7 @@ div.separator {
 
 .info p:nth-child(5) {
 	font-weight: 400;
-	/* padding-bottom: 80px; */
 	line-height: 1.5;
-	/* margin-bottom: 20px; */
 }
 
 

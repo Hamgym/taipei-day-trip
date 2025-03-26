@@ -67,8 +67,8 @@ async function loadOne() {
 			circles.children[id].setAttribute("class", "circle black");
 			slideShow.children[id + 3].setAttribute("style", "display: block");;
 		});
-		count++;
 		circles.appendChild(cir);
+		count++;
 	}
 	protoImg.remove();
 	protoCir.remove();
@@ -137,4 +137,3 @@ async function loadOne() {
 		event.preventDefault();
 	});
 }
-

@@ -6,7 +6,6 @@ section {
 
 .picture {
 	width: 100%;
-	/* flex-grow: 1; */
 	margin-right: 25px;
 	margin-bottom: 15px;
 }
@@ -27,6 +26,8 @@ section {
 	margin-top: 28px;
 }
 
+
+
 .info {
 	padding-left: 25px;
 	padding-right: 25px;
@@ -36,6 +37,8 @@ section {
 .info p:first-child {
 	line-height: 1.5;
 }
+
+
 
 @media screen and (width <=830px) {
 	section {
