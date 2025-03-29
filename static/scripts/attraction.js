@@ -40,17 +40,17 @@ function frontInit() {
 	});
 }
 
-loadOne();
-async function loadOne() {
+load();
+async function load() {
 	let id = location.pathname.slice(12);
 	let res = await fetch(`/api/attraction/${id}`);
 	let rawData = await res.json();
 	let data = rawData.data;
+	let images = data.images;
 	let slideShow = document.querySelector(".picture");
 	let protoImg = slideShow.querySelector("img");
 	let circles = slideShow.querySelector(".circles");
 	let protoCir = slideShow.querySelector(".circle");
-	let images = data.images;
 	let count = 0;
 	for (let url of images) {
 		let img = protoImg.cloneNode(true);
