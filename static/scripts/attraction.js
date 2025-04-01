@@ -1,5 +1,18 @@
 frontInit();
-function frontInit() {
+async function frontInit() {
+	let user = null;
+	let token = localStorage.getItem("token");
+	if (token) {
+		let url = "/api/user/auth";
+		let request = new Request(url, {
+			headers: { "Authorization": `Bearer ${token}` },
+		});
+		let res = await fetch(request);
+		let resData = await res.json();
+		user = resData.data;
+	}
+	console.log(user);
+
 	let title = document.querySelector(".navigation h2");
 	title.addEventListener("click", function () {
 		window.location.href = "/";

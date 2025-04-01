@@ -40,19 +40,13 @@ from mysql.connector.errors import PoolError, IntegrityError
 @app.exception_handler(PoolError)
 async def pool_error(request:Request, exc:PoolError):
   return JSONResponse({"error":True,"message":"資料庫忙線中"}, 500)
-@app.exception_handler(IntegrityError)
-async def duplicate_error(request:Request, exc:IntegrityError):
-  return JSONResponse({"error":True,"message":"註冊失敗，重複的 Email。"}, 400)
+# @app.exception_handler(IntegrityError)
+# async def duplicate_error(request:Request, exc:IntegrityError):
+#   return JSONResponse({"error":True,"message":"註冊失敗，重複的 Email"}, 400)
 from fastapi.exceptions import RequestValidationError
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
-    return JSONResponse({"error":True,"message":"註冊失敗，資料格式不符。"}, 400)
-
-
-import jwt
-from datetime import datetime, timezone, timedelta
-encoded_jwt = jwt.encode({"exp": datetime.now(timezone.utc)+timedelta(seconds=10)}, "secret", algorithm="HS256")
-# print(jwt.decode(encoded_jwt, "secret", algorithms=["HS256"]))
+  return JSONResponse({"error":True, "message":"註冊失敗，資料格式不符"}, 400)
 
 
 from pydantic import BaseModel, Field
@@ -70,11 +64,18 @@ class SignIn(BaseModel):
 async def post_user(user: SignUp):
   cnx = cnxpool.get_connection()
   cursor = cnx.cursor()
-  cursor.execute("INSERT INTO user(name, email, password) VALUE(%s, %s, %s)", (user.name, user.email, user.password))
-  cnx.commit()
-  cnx.close()
-  return {"ok": True}
+  try:
+    cursor.execute("INSERT INTO user(name, email, password) VALUE(%s, %s, %s)", (user.name, user.email, user.password))
+    cnx.commit()
+    cnx.close()
+    return {"ok": True}
+  except:
+    cnx.close()
+    return JSONResponse({"error":True, "message":"註冊失敗，重複的 Email"}, 400)
 
+
+import jwt
+from datetime import datetime, timezone, timedelta
 @app.put("/api/user/auth")
 async def put_auth(user: SignIn):
   cnx = cnxpool.get_connection()
@@ -82,12 +83,25 @@ async def put_auth(user: SignIn):
   cursor.execute("SELECT * FROM user WHERE email=%s AND password=%s", (user.email, user.password))
   row = cursor.fetchone()
   if(not row):
-    return {"error":True, "message": "登入失敗，帳號或密碼錯誤。"}
+    cnx.close()
+    return JSONResponse({"error":True,"message":"登入失敗，帳號或密碼錯誤"}, 400)
   payload = {"id":row[0], "name":row[1], "email":row[2]}
-  payload["exp"] = datetime.now(timezone.utc) + timedelta(seconds=10)
+  payload["exp"] = datetime.now(timezone.utc) + timedelta(weeks=1)
   encoded_jwt = jwt.encode(payload, "secret", algorithm="HS256")
   cnx.close()
   return {"token": encoded_jwt}
+
+@app.get("/api/user/auth")
+async def get_auth(authorization: str = Header()):
+  [scheme, token] = authorization.split()
+  if scheme != "Bearer":
+    return {"data": None}
+  try:
+    payload = jwt.decode(token, "secret", algorithms=["HS256"])
+    payload.pop("exp")
+    return {"data": payload}
+  except:
+    return {"data": None}
 
 
 import json
