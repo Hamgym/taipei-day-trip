@@ -48,6 +48,48 @@ function frontInit() {
 			signupDialog.style.display = "none";
 		}
 	});
+
+	let signupForm = document.querySelector(".signup-main form");
+	signupForm.addEventListener("submit", async function (event) {
+		event.preventDefault();
+		let submitter = signupForm.querySelector("[type='submit']");
+		let formData = new FormData(this, submitter);
+		let body = {};
+		for (const [key, value] of formData) {
+			body[key] = value;
+		}
+		let url = "/api/user";
+		let request = new Request(url, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(body),
+		});
+		let res = await fetch(request);
+		let resData = await res.json();
+		console.log(resData);
+	});
+
+	let signinForm = document.querySelector(".signin-main form");
+	signinForm.addEventListener("submit", async function (event) {
+		event.preventDefault();
+		let submitter = signinForm.querySelector("[type='submit']");
+		let formData = new FormData(this, submitter);
+		let body = {};
+		for (const [key, value] of formData) {
+			body[key] = value;
+		}
+		let url = "/api/user/auth";
+		let request = new Request(url, {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(body),
+		});
+		let res = await fetch(request);
+		let resData = await res.json();
+		localStorage.setItem("token", resData.token);
+		// let token = localStorage.getItem("token");
+		// console.log(token);
+	});
 }
 
 

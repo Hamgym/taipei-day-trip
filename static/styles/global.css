@@ -104,7 +104,7 @@ body {
 	margin-bottom: 10px;
 }
 
-.signin-main input[type="button"] {
+.signin-main input[type="submit"] {
 	background-color: #448899;
 	color: #FFFFFF;
 	font-size: 19px;
@@ -114,7 +114,7 @@ body {
 	border: none;
 }
 
-.signin-main input[type="button"]:hover {
+.signin-main input[type="submit"]:hover {
 	cursor: pointer;
 }
 
@@ -198,7 +198,7 @@ body {
 	margin-bottom: 10px;
 }
 
-.signup-main input[type="button"] {
+.signup-main input[type="submit"] {
 	background-color: #448899;
 	color: #FFFFFF;
 	font-size: 19px;
@@ -208,7 +208,7 @@ body {
 	border: none;
 }
 
-.signup-main input[type="button"]:hover {
+.signup-main input[type="submit"]:hover {
 	cursor: pointer;
 }
 
