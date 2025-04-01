@@ -1,5 +1,10 @@
 frontInit();
 async function frontInit() {
+	let title = document.querySelector(".navigation h2");
+	title.addEventListener("click", function () {
+		window.location.href = "/";
+	});
+
 	let user = null;
 	let token = localStorage.getItem("token");
 	if (token) {
@@ -11,23 +16,26 @@ async function frontInit() {
 		let resData = await res.json();
 		user = resData.data;
 	}
-	console.log(user);
 
-	let title = document.querySelector(".navigation h2");
-	title.addEventListener("click", function () {
-		window.location.href = "/";
-	});
-
-	let mask = document.querySelector("div.mask");
 	let signLink = document.querySelector(".navigation div.sign");
+	if (user) {
+		signLink.innerText = "登出系統";
+		signLink.addEventListener("click", function () {
+			localStorage.clear();
+			location.href = "/";
+		});
+	} else {
+		signLink.innerText = "登入/註冊";
+		signLink.addEventListener("click", function () {
+			mask.style.display = "block";
+			signinDialog.style.display = "block";
+		});
+	}
+	let mask = document.querySelector("div.mask");
 	let signinLink = document.querySelector(".signup-main div.signin");
 	let signupLink = document.querySelector(".signin-main div.signup");
 	let signinDialog = document.querySelector("div.signin-dialog");
 	let signupDialog = document.querySelector("div.signup-dialog");
-	signLink.addEventListener("click", function () {
-		mask.style.display = "block";
-		signinDialog.style.display = "block";
-	});
 	signinLink.addEventListener("click", function () {
 		signinDialog.style.display = "block";
 		signupDialog.style.display = "none";
@@ -49,6 +57,62 @@ async function frontInit() {
 			mask.style.display = "none";
 			signinDialog.style.display = "none";
 			signupDialog.style.display = "none";
+		}
+	});
+
+	let signupForm = document.querySelector(".signup-main form");
+	signupForm.addEventListener("submit", async function (event) {
+		event.preventDefault();
+		let submitter = signupForm.querySelector("[type='submit']");
+		let formData = new FormData(this, submitter);
+		let body = {};
+		for (const [key, value] of formData) {
+			body[key] = value;
+		}
+		let url = "/api/user";
+		let request = new Request(url, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(body),
+		});
+		let res = await fetch(request);
+		let resData = await res.json();
+		if (resData.error) {
+			let p = signupForm.querySelector("p.message");
+			p.setAttribute("style", "display: block");
+			p.innerText = resData.message;
+		}
+		if (resData.ok) {
+			let p = signupForm.querySelector("p.message");
+			p.setAttribute("style", "display: block");
+			p.innerText = "恭喜您，註冊成功！";
+		}
+	});
+
+	let signinForm = document.querySelector(".signin-main form");
+	signinForm.addEventListener("submit", async function (event) {
+		event.preventDefault();
+		let submitter = signinForm.querySelector("[type='submit']");
+		let formData = new FormData(this, submitter);
+		let body = {};
+		for (const [key, value] of formData) {
+			body[key] = value;
+		}
+		let url = "/api/user/auth";
+		let request = new Request(url, {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(body),
+		});
+		let res = await fetch(request);
+		let resData = await res.json();
+		if (resData.error) {
+			let message = signinForm.querySelector("p.message");
+			message.innerText = resData.message;
+			message.setAttribute("style", "display: block");
+		} else {
+			localStorage.setItem("token", resData.token);
+			location.href = "/";
 		}
 	});
 }
