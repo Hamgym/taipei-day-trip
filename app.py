@@ -2,6 +2,7 @@ from fastapi import *
 from fastapi.responses import FileResponse
 app=FastAPI()
 
+
 # Static Pages (Never Modify Code in this Block)
 @app.get("/", include_in_schema=False)
 async def index(request: Request):
@@ -36,30 +37,26 @@ select_all = "SELECT attraction.id, attraction.name, category, description, addr
 
 
 from fastapi.responses import JSONResponse
-from mysql.connector.errors import PoolError, IntegrityError
+from mysql.connector.errors import PoolError
 @app.exception_handler(PoolError)
 async def pool_error(request:Request, exc:PoolError):
   return JSONResponse({"error":True,"message":"資料庫忙線中"}, 500)
-# @app.exception_handler(IntegrityError)
-# async def duplicate_error(request:Request, exc:IntegrityError):
-#   return JSONResponse({"error":True,"message":"註冊失敗，重複的 Email"}, 400)
 from fastapi.exceptions import RequestValidationError
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
-  return JSONResponse({"error":True, "message":"註冊失敗，資料格式不符"}, 400)
+  return JSONResponse({"error":True, "message":"資料格式不符，請重新輸入"}, 400)
 
 
 from pydantic import BaseModel, Field
-class SignUp(BaseModel):
-    name: str = Field(min_length=1)
-    email: str = Field(min_length=3)
-    password: str = Field(min_length=3)
-
 class SignIn(BaseModel):
     email: str = Field(min_length=3)
     password: str = Field(min_length=3)
+class SignUp(SignIn):
+    name: str = Field(min_length=1)
 
 
+import jwt
+from datetime import datetime, timezone, timedelta
 @app.post("/api/user")
 async def post_user(user: SignUp):
   cnx = cnxpool.get_connection()
@@ -72,32 +69,28 @@ async def post_user(user: SignUp):
   except:
     cnx.close()
     return JSONResponse({"error":True, "message":"註冊失敗，重複的 Email"}, 400)
-
-
-import jwt
-from datetime import datetime, timezone, timedelta
 @app.put("/api/user/auth")
 async def put_auth(user: SignIn):
   cnx = cnxpool.get_connection()
   cursor = cnx.cursor()
   cursor.execute("SELECT * FROM user WHERE email=%s AND password=%s", (user.email, user.password))
   row = cursor.fetchone()
-  if(not row):
+  if(row):
+    payload = {"id":row[0], "name":row[1], "email":row[2]}
+    payload["exp"] = datetime.now(timezone.utc) + timedelta(weeks=1)
+    encoded_jwt = jwt.encode(payload, os.getenv("JWT_SECRET"), algorithm="HS256")
+    cnx.close()
+    return {"token": encoded_jwt}
+  else:
     cnx.close()
     return JSONResponse({"error":True,"message":"登入失敗，帳號或密碼錯誤"}, 400)
-  payload = {"id":row[0], "name":row[1], "email":row[2]}
-  payload["exp"] = datetime.now(timezone.utc) + timedelta(weeks=1)
-  encoded_jwt = jwt.encode(payload, "secret", algorithm="HS256")
-  cnx.close()
-  return {"token": encoded_jwt}
-
 @app.get("/api/user/auth")
 async def get_auth(authorization: str = Header()):
   [scheme, token] = authorization.split()
   if scheme != "Bearer":
     return {"data": None}
   try:
-    payload = jwt.decode(token, "secret", algorithms=["HS256"])
+    payload = jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
     payload.pop("exp")
     return {"data": payload}
   except:
@@ -138,7 +131,6 @@ async def get_attractions(page:int=Query(ge=0), keyword:str=Query(None)):
     tmp.clear()
   cnx.close()
   return {"nextPage": next_page, "data": data}
-
 @app.get("/api/attraction/{attractionId}")
 async def get_attraction_by_id(attractionId: int):
   cnx = cnxpool.get_connection()
@@ -162,7 +154,6 @@ async def get_attraction_by_id(attractionId: int):
     data["images"] = json.loads(record[9])
     cnx.close()
     return {"data": data}
-
 @app.get("/api/mrts")
 async def get_mrts():
   cnx = cnxpool.get_connection()

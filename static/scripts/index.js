@@ -1,10 +1,5 @@
 frontInit();
 async function frontInit() {
-	let title = document.querySelector(".navigation h2");
-	title.addEventListener("click", function () {
-		window.location.href = "/";
-	});
-
 	let user = null;
 	let token = localStorage.getItem("token");
 	if (token) {
@@ -17,7 +12,14 @@ async function frontInit() {
 		user = resData.data;
 	}
 
+	let mask = document.querySelector("div.mask");
+	let title = document.querySelector(".navigation h2");
 	let signLink = document.querySelector(".navigation div.sign");
+	let closeBtns = document.querySelectorAll("div.close");
+	let signinLink = document.querySelector(".signup-main div.signin");
+	let signupLink = document.querySelector(".signin-main div.signup");
+	let signinDialog = document.querySelector("div.signin-dialog");
+	let signupDialog = document.querySelector("div.signup-dialog");
 	if (user) {
 		signLink.innerText = "登出系統";
 		signLink.addEventListener("click", function () {
@@ -31,11 +33,13 @@ async function frontInit() {
 			signinDialog.style.display = "block";
 		});
 	}
-	let mask = document.querySelector("div.mask");
-	let signinLink = document.querySelector(".signup-main div.signin");
-	let signupLink = document.querySelector(".signin-main div.signup");
-	let signinDialog = document.querySelector("div.signin-dialog");
-	let signupDialog = document.querySelector("div.signup-dialog");
+	for (let closeBtn of closeBtns) {
+		closeBtn.addEventListener("click", function () {
+			mask.style.display = "none";
+			signinDialog.style.display = "none";
+			signupDialog.style.display = "none";
+		});
+	}
 	signinLink.addEventListener("click", function () {
 		signinDialog.style.display = "block";
 		signupDialog.style.display = "none";
@@ -44,14 +48,6 @@ async function frontInit() {
 		signinDialog.style.display = "none";
 		signupDialog.style.display = "block";
 	});
-	let closeBtns = document.querySelectorAll("div.close");
-	for (let closeBtn of closeBtns) {
-		closeBtn.addEventListener("click", function () {
-			mask.style.display = "none";
-			signinDialog.style.display = "none";
-			signupDialog.style.display = "none";
-		});
-	}
 	window.addEventListener("keydown", function (event) {
 		if (event.key == "Escape") {
 			mask.style.display = "none";
@@ -59,8 +55,12 @@ async function frontInit() {
 			signupDialog.style.display = "none";
 		}
 	});
+	title.addEventListener("click", function () {
+		window.location.href = "/";
+	});
 
 	let signupForm = document.querySelector(".signup-main form");
+	let signinForm = document.querySelector(".signin-main form");
 	signupForm.addEventListener("submit", async function (event) {
 		event.preventDefault();
 		let submitter = signupForm.querySelector("[type='submit']");
@@ -88,8 +88,6 @@ async function frontInit() {
 			p.innerText = "恭喜您，註冊成功！";
 		}
 	});
-
-	let signinForm = document.querySelector(".signin-main form");
 	signinForm.addEventListener("submit", async function (event) {
 		event.preventDefault();
 		let submitter = signinForm.querySelector("[type='submit']");
@@ -107,21 +105,23 @@ async function frontInit() {
 		let res = await fetch(request);
 		let resData = await res.json();
 		if (resData.error) {
-			let message = signinForm.querySelector("p.message");
-			message.innerText = resData.message;
-			message.setAttribute("style", "display: block");
+			let p = signinForm.querySelector("p.message");
+			p.innerText = resData.message;
+			p.setAttribute("style", "display:block");
 		} else {
 			localStorage.setItem("token", resData.token);
 			location.href = "/";
 		}
 	});
 
+
+
 	let list = document.querySelector(".list");
 	let leftBtn = document.querySelector("button.left");
+	let rightBtn = document.querySelector("button.right");
 	leftBtn.addEventListener("click", function () {
 		list.scrollBy({ left: -300, behavior: "smooth" });
 	});
-	let rightBtn = document.querySelector("button.right");
 	rightBtn.addEventListener("click", function () {
 		list.scrollBy({ left: 300, behavior: "smooth" });
 	});
