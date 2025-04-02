@@ -2,13 +2,13 @@
 	box-sizing: border-box;
 	margin: 0;
 	padding: 0;
-	/* scrollbar-width: none; */
 	color: inherit;
 	font-size: inherit;
 	font-weight: inherit;
 	font-family: inherit;
 	font-optical-sizing: inherit;
 	text-decoration: none;
+	/* scrollbar-width: none; */
 }
 
 html {
@@ -45,7 +45,6 @@ body {
 	top: 80px;
 	left: calc(50% - 340px / 2);
 	width: 340px;
-	/* height: 275px; */
 	z-index: 30;
 	box-shadow: 0 4px 60px #AAAAAA;
 	display: none;
@@ -76,10 +75,6 @@ body {
 
 .signin-dialog .signin-main {
 	width: 310px;
-	/* height: 234px; */
-	/* position: relative; */
-	/* top: 15px; */
-	/* left: 15px; */
 	margin: 15px 0 16px 15px;
 }
 
@@ -91,10 +86,6 @@ body {
 	text-align: center;
 	margin-bottom: 15px;
 }
-
-/* .signin-main form {
-	height: 192px;
-} */
 
 .signin-main input {
 	width: 100%;
@@ -146,7 +137,6 @@ body {
 	top: 80px;
 	left: calc(50% - 340px / 2);
 	width: 340px;
-	/* height: 332px; */
 	z-index: 30;
 	box-shadow: 0 4px 60px #AAAAAA;
 	display: none;
@@ -177,10 +167,6 @@ body {
 
 .signup-dialog .signup-main {
 	width: 310px;
-	/* height: 291px; */
-	/* position: relative; */
-	/* top: 15px; */
-	/* left: 15px; */
 	margin: 15px 0 16px 15px;
 }
 
@@ -192,10 +178,6 @@ body {
 	text-align: center;
 	margin-bottom: 15px;
 }
-
-/* .signup-main form {
-	height: 249px;
-} */
 
 .signup-main input {
 	width: 100%;
