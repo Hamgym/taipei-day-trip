@@ -37,11 +37,11 @@ select_all = "SELECT attraction.id, attraction.name, category, description, addr
 
 
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 from mysql.connector.errors import PoolError
 @app.exception_handler(PoolError)
 async def pool_error(request:Request, exc:PoolError):
-  return JSONResponse({"error":True,"message":"資料庫忙線中"}, 500)
-from fastapi.exceptions import RequestValidationError
+  return JSONResponse({"error":True, "message":"資料庫忙線中"}, 500)
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
   return JSONResponse({"error":True, "message":"資料格式不符，請重新輸入"}, 400)
@@ -83,7 +83,7 @@ async def put_auth(user: SignIn):
     return {"token": encoded_jwt}
   else:
     cnx.close()
-    return JSONResponse({"error":True,"message":"登入失敗，帳號或密碼錯誤"}, 400)
+    return JSONResponse({"error":True, "message":"登入失敗，帳號或密碼錯誤"}, 400)
 @app.get("/api/user/auth")
 async def get_auth(authorization: str = Header()):
   [scheme, token] = authorization.split()
