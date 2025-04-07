@@ -1,0 +1,520 @@
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+	color: inherit;
+	font-size: inherit;
+	font-weight: inherit;
+	font-family: inherit;
+	font-optical-sizing: inherit;
+	text-decoration: none;
+	scrollbar-width: none;
+}
+
+html {
+	color: #666666;
+	font-size: 16px;
+	font-weight: 500;
+	font-family: "Noto Sans TC", sans-serif;
+	font-optical-sizing: auto;
+	line-height: 1;
+}
+
+body {
+	position: relative;
+	/* height: 1250px; */
+}
+
+.mask {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #000000;
+	opacity: 25%;
+	z-index: 20;
+	display: none;
+}
+
+
+
+.signin-dialog {
+	background-color: #FFFFFF;
+	border-radius: 5px;
+	position: fixed;
+	top: 80px;
+	left: calc(50% - 340px / 2);
+	width: 340px;
+	z-index: 30;
+	box-shadow: 0 4px 60px #AAAAAA;
+	display: none;
+}
+
+.signin-dialog .decorator-bar {
+	background-image: linear-gradient(to left, #337788, #66AABB);
+	border-radius: 5px 5px 0 0;
+	width: 100%;
+	height: 10px;
+}
+
+.signin-dialog .close {
+	width: 30px;
+	height: 30px;
+	position: absolute;
+	top: 20px;
+	left: 300px;
+	background-image: url(/static/images/icon-close.svg);
+	background-repeat: no-repeat;
+	background-position: center;
+	z-index: 40;
+}
+
+.signin-dialog .close:hover {
+	cursor: pointer;
+}
+
+.signin-dialog .signin-main {
+	width: 310px;
+	margin: 15px 0 16px 15px;
+}
+
+.signin-main h3 {
+	font-size: 24px;
+	font-weight: 700;
+	height: 27px;
+	line-height: 27px;
+	text-align: center;
+	margin-bottom: 15px;
+}
+
+.signin-main input {
+	width: 100%;
+	height: 47px;
+	border-radius: 5px;
+	border: 1px solid #CCCCCC;
+	padding: 0px 14px 2px 14px;
+	margin-bottom: 10px;
+}
+
+.signin-main input[type="submit"] {
+	background-color: #448899;
+	color: #FFFFFF;
+	font-size: 19px;
+	font-weight: 400;
+	height: 46px;
+	line-height: 46px;
+	border: none;
+}
+
+.signin-main input[type="submit"]:hover {
+	cursor: pointer;
+}
+
+.signin-main .message {
+	text-align: center;
+	margin-bottom: 10px;
+	color: red;
+}
+
+.signin-main .signup {
+	height: 22px;
+	line-height: 22px;
+	text-align: center;
+	max-width: fit-content;
+	margin: auto;
+}
+
+.signin-main .signup:hover {
+	cursor: pointer;
+}
+
+
+
+.signup-dialog {
+	background-color: #FFFFFF;
+	border-radius: 5px;
+	position: fixed;
+	top: 80px;
+	left: calc(50% - 340px / 2);
+	width: 340px;
+	z-index: 30;
+	box-shadow: 0 4px 60px #AAAAAA;
+	display: none;
+}
+
+.signup-dialog .decorator-bar {
+	background-image: linear-gradient(to left, #337788, #66AABB);
+	border-radius: 5px 5px 0 0;
+	width: 100%;
+	height: 10px;
+}
+
+.signup-dialog .close {
+	width: 30px;
+	height: 30px;
+	position: absolute;
+	top: 20px;
+	left: 300px;
+	background-image: url(/static/images/icon-close.svg);
+	background-repeat: no-repeat;
+	background-position: center;
+	z-index: 40;
+}
+
+.signup-dialog .close:hover {
+	cursor: pointer;
+}
+
+.signup-dialog .signup-main {
+	width: 310px;
+	margin: 15px 0 16px 15px;
+}
+
+.signup-main h3 {
+	font-size: 24px;
+	font-weight: 700;
+	height: 27px;
+	line-height: 27px;
+	text-align: center;
+	margin-bottom: 15px;
+}
+
+.signup-main input {
+	width: 100%;
+	height: 47px;
+	border-radius: 5px;
+	border: 1px solid #CCCCCC;
+	padding: 0px 14px 2px 14px;
+	margin-bottom: 10px;
+}
+
+.signup-main input[type="submit"] {
+	background-color: #448899;
+	color: #FFFFFF;
+	font-size: 19px;
+	font-weight: 400;
+	height: 46px;
+	line-height: 46px;
+	border: none;
+}
+
+.signup-main input[type="submit"]:hover {
+	cursor: pointer;
+}
+
+.signup-main .message {
+	text-align: center;
+	margin-bottom: 10px;
+	color: red;
+}
+
+.signup-main .signin {
+	height: 22px;
+	line-height: 22px;
+	text-align: center;
+	max-width: fit-content;
+	margin: auto;
+}
+
+.signup-main .signin:hover {
+	cursor: pointer;
+}
+
+
+
+.navigation {
+	background-color: #FFFFFF;
+	height: 54px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	outline: 0.5px solid #E8E8E8;
+}
+
+.navigation>div {
+	width: 1200px;
+	height: 34px;
+	display: flex;
+	justify-content: space-between;
+	padding: 0 10px;
+}
+
+.navigation h2 {
+	width: 150px;
+	font-weight: 700;
+	font-size: 30px;
+	line-height: 34px;
+	color: #448899;
+}
+
+.navigation h2:hover {
+	cursor: pointer;
+}
+
+.navigation .container {
+	width: 175px;
+	display: flex;
+}
+
+.navigation a {
+	width: 84px;
+	padding: 10px;
+	line-height: 12px;
+	color: #666666;
+}
+
+.navigation .sign {
+	width: 91px;
+	padding: 10px;
+	line-height: 12px;
+	color: #666666;
+}
+
+.navigation .sign:hover {
+	cursor: pointer;
+}
+
+
+
+.headline {
+	max-width: 1000px;
+	margin: auto;
+	margin-top: 40px;
+	font-size: 19px;
+	font-weight: 700;
+	line-height: 27px;
+}
+
+
+
+.section {
+	max-width: 980px;
+	height: 200px;
+	margin: auto;
+	margin-top: 30px;
+	display: flex;
+	justify-content: space-between;
+	position: relative;
+}
+
+.section img {
+	width: 250px;
+	height: 100%;
+	object-fit: cover;
+}
+
+.section .info {
+	width: 700px;
+}
+
+.section .info p {
+	font-weight: 700;
+	height: 24px;
+	padding-top: 3px;
+	margin-top: 10px;
+}
+
+.section .info p.name {
+	color: #448899;
+	margin-top: 0;
+}
+
+.section .info p.date {
+	margin-top: 20px;
+}
+
+.section .info span {
+	font-weight: 500;
+	margin-left: 5px;
+}
+
+.section .delete {
+	background-image: url(/static/images/icon_delete.svg);
+	width: 30px;
+	height: 30px;
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+
+
+
+.separator-one {
+	width: 1200px;
+	height: 40.5px;
+	margin: auto;
+	border-bottom: 1px solid #E8E8E8;
+}
+
+
+
+.contact {
+	max-width: 980px;
+	margin: auto;
+	margin-top: 40px;
+}
+
+.contact h3 {
+	font-weight: 700;
+	font-size: 19px;
+	height: 24px;
+	padding-top: 2px;
+}
+
+.contact div {
+	height: 38px;
+	display: flex;
+	align-items: center;
+}
+
+.contact .name {
+	margin-top: 20px;
+}
+
+.contact label {
+	padding-bottom: 1px;
+}
+
+.contact input {
+	width: 200px;
+	height: 100%;
+	border: 1px solid #E8E8E8;
+	border-radius: 5px;
+	color: black;
+	padding: 10px 10px 10px 9px;
+	margin-left: 1px;
+	margin-bottom: 1px;
+}
+
+.contact .email {
+	margin-top: 15px;
+}
+
+.contact .phone {
+	margin-top: 15px;
+}
+
+.contact .notice {
+	margin-top: 17.5px;
+	font-weight: 700;
+}
+
+
+
+.separator-two {
+	width: 1200px;
+	height: 45.5px;
+	margin: auto;
+	border-bottom: 1px solid #E8E8E8;
+}
+
+
+
+.payment {
+	max-width: 980px;
+	margin: auto;
+	margin-top: 40px;
+}
+
+.payment h3 {
+	font-weight: 700;
+	font-size: 19px;
+	height: 24px;
+	padding-top: 2px;
+}
+
+.payment div {
+	height: 38px;
+	display: flex;
+	align-items: center;
+}
+
+.payment .card {
+	margin-top: 20px;
+}
+
+.payment label {
+	padding-bottom: 1px;
+}
+
+.payment input {
+	width: 200px;
+	height: 100%;
+	border: 1px solid #E8E8E8;
+	border-radius: 5px;
+	color: black;
+	padding: 10px 10px 10px 9px;
+	margin-left: 1px;
+	margin-bottom: 1px;
+}
+
+.payment .exp {
+	margin-top: 15px;
+}
+
+.payment .cvv {
+	margin-top: 15px;
+}
+
+
+
+.separator-three {
+	width: 1200px;
+	height: 40px;
+	margin: auto;
+	border-bottom: 1px solid #E8E8E8;
+}
+
+
+
+.confirm {
+	max-width: 980px;
+	height: 100px;
+	margin: auto;
+	margin-top: 40px;
+	padding-top: 0.5px;
+	position: relative;
+}
+
+.confirm .total {
+	text-align: right;
+	font-weight: 700;
+}
+
+.confirm button {
+	background-color: #448899;
+	color: white;
+	width: 173px;
+	height: 36px;
+	border: none;
+	border-radius: 5px;
+	position: absolute;
+	right: 0;
+	top: 41.5px;
+	font-size: 19px;
+	font-weight: 350;
+	padding-bottom: 1px;
+}
+
+
+
+.footer {
+	background-color: #757575;
+	height: 104px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-top: 39.5px;
+}
+
+.footer p {
+	color: #FFFFFF;
+	font-weight: 600;
+	line-height: 38px;
+	height: 40px;
+	letter-spacing: 0.1px;
+}
