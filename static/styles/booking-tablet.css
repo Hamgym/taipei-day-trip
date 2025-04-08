@@ -1,0 +1,107 @@
+.headline {
+	padding: 0 130px;
+}
+
+
+
+.section {
+	margin: 0 20px;
+	margin-top: 29.5px;
+}
+
+
+
+.contact {
+	margin: 0 20px;
+	margin-top: 40px;
+}
+
+
+
+.payment {
+	margin: 0 20px;
+	margin-top: 40px;
+}
+
+
+
+.confirm {
+	margin: 0 130px;
+	margin-top: 40px;
+}
+
+
+
+@media screen and (width <=900px) {
+	.headline {
+		padding: 0 40px;
+	}
+
+
+
+	.section {
+		margin: 0 40px;
+		margin-top: 29.5px;
+		padding-left: 0;
+		padding-right: 0;
+		padding-bottom: 63.5px;
+		flex-wrap: wrap;
+	}
+
+	.section img {
+		width: 100%;
+		height: auto;
+		aspect-ratio: 17 / 10;
+		object-fit: cover;
+	}
+
+	.section .info {
+		width: 700px;
+		margin-left: 0;
+		margin-top: 30px;
+	}
+
+	.section .info p.address {
+		margin-top: 6px;
+		line-height: 1.5;
+	}
+
+	.section .delete {
+		top: initial;
+		bottom: 29.5px;
+		right: 0px;
+	}
+
+
+
+	.contact {
+		margin: 0 40px;
+		margin-top: 40px;
+		padding-left: 0;
+		padding-right: 0;
+		padding-bottom: 39.5px;
+	}
+
+	.contact p.notice {
+		margin-top: 19.5px;
+		line-height: 1.5;
+	}
+
+
+
+	.payment {
+		margin: 0 40px;
+		margin-top: 40px;
+		padding-left: 0;
+		padding-right: 0;
+	}
+
+
+
+	.confirm {
+		margin: 0 40px;
+		margin-top: 40px;
+		padding-left: 0;
+		padding-right: 0;
+	}
+}
