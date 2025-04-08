@@ -48,11 +48,31 @@ async def validation_exception_handler(request, exc):
 
 
 from pydantic import BaseModel, Field
+from datetime import date
+from typing import Literal
 class SignIn(BaseModel):
-    email: str = Field(min_length=3)
-    password: str = Field(min_length=3)
+  email: str = Field(min_length=3)
+  password: str = Field(min_length=3)
 class SignUp(SignIn):
-    name: str = Field(min_length=1)
+  name: str = Field(min_length=1)
+class Booking(BaseModel):
+  attractionId: int
+  date: date
+  time: Literal["morning", "afternoon"]
+  price: Literal[2000, 2500]
+
+
+from fastapi.responses import RedirectResponse
+@app.middleware("http")
+async def check_signin_status(request:Request, call_next):
+  if request.scope["path"].find("booking", 0, 12) != -1:
+    pass
+    # print("booking!!!")
+    # return RedirectResponse("/")
+    # print(request.headers.get("authorization"))
+    # return JSONResponse("請登入", 401)
+  response = await call_next(request)
+  return response
 
 
 import jwt
@@ -86,10 +106,10 @@ async def put_auth(user: SignIn):
     return JSONResponse({"error":True, "message":"登入失敗，帳號或密碼錯誤"}, 400)
 @app.get("/api/user/auth")
 async def get_auth(authorization: str = Header()):
-  [scheme, token] = authorization.split()
-  if scheme != "Bearer":
-    return {"data": None}
+  # if scheme != "Bearer":
+  #   return {"data": None}
   try:
+    [scheme, token] = authorization.split()
     payload = jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
     payload.pop("exp")
     return {"data": payload}
@@ -165,3 +185,30 @@ async def get_mrts():
     data.append(record[0])
   cnx.close()
   return {"data": data}
+
+
+@app.post("/api/booking")
+async def post_booking(authorization:str=Header(), body:Booking=Body()):
+  payload = {}
+  try:
+    [scheme, token] = authorization.split()
+    payload = jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
+  except:
+    return JSONResponse({
+      "error": True,
+      "message": "未登入系統，拒絕存取"
+    }, 403)
+  cnx = cnxpool.get_connection()
+  cursor = cnx.cursor()
+  try:
+    cursor.execute("DELETE FROM booking WHERE user_id=%s", (payload["id"],))
+    cursor.execute("INSERT INTO booking(user_id, attraction_id, date, time, price) VALUES(%s, %s, %s, %s, %s)", (payload["id"], body.attractionId, body.date, body.time, body.price))
+    cnx.commit()
+  except:
+    cnx.close()
+    return JSONResponse({
+      "error": True,
+      "message": "建立失敗，輸入不正確或其他原因"
+    }, 400)
+  cnx.close()
+  return {"ok": True}

@@ -1,7 +1,8 @@
+let token = localStorage.getItem("token");
 frontInit();
 async function frontInit() {
 	let user = null;
-	let token = localStorage.getItem("token");
+	// let token = localStorage.getItem("token");
 	if (token) {
 		let url = "/api/user/auth";
 		let request = new Request(url, {
@@ -208,7 +209,47 @@ async function load() {
 	});
 
 	let form = document.querySelector(`[class="booking"]`);
-	form.addEventListener("submit", (event) => {
+	form.addEventListener("submit", async function (event) {
 		event.preventDefault();
+		if (!token) {
+			let sign = document.querySelector(".sign");
+			sign.click();
+			return;
+		}
+		let attractionId = Number(id);
+		let date = form.querySelector("#date").value;
+		let time = "";
+		let price = 0;
+		let morning = form.querySelector("#morning").checked;
+		let afternoon = form.querySelector("#afternoon").checked;
+		if (morning) {
+			time = "morning"
+			price = 2000;
+		};
+		if (afternoon) {
+			time = "afternoon"
+			price = 2500;
+		};
+		if (date && time) {
+			let url = "/api/booking";
+			let request = new Request(url, {
+				method: "POST",
+				headers: {
+					"Authorization": `Bearer ${token}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					"attractionId": attractionId,
+					"date": date,
+					"time": time,
+					"price": price
+				}),
+			});
+			let res = await fetch(request);
+			let resData = await res.json();
+			if (resData.ok) {
+				location.href = "/booking";
+			}
+		}
 	});
 }

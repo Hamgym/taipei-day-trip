@@ -12,6 +12,17 @@ async function frontInit() {
 		user = resData.data;
 	}
 
+	let booking = document.querySelector(".navigation a");
+	// booking.addEventListener("click", async function () {
+	// 	let url = "/booking";
+	// 	let request = new Request(url, {
+	// 		headers: { "Authorization": `Bearer ${token}` },
+	// 	});
+	// 	let res = await fetch(request);
+	// 	let resData = await res.json();
+	// });
+	// console.log(booking);
+
 	let mask = document.querySelector("div.mask");
 	let title = document.querySelector(".navigation h2");
 	let signLink = document.querySelector(".navigation div.sign");
