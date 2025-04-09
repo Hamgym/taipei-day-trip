@@ -134,6 +134,15 @@ async function load(user) {
 	let res = await fetch(request);
 	let resData = await res.json();
 	let data = resData.data;
+	if (data == null) {
+		document.querySelector(".section").style.display = "none";
+		document.querySelector(".contact").style.display = "none";
+		document.querySelector(".payment").style.display = "none";
+		document.querySelector(".confirm").style.display = "none";
+		document.querySelector(".hidden").style.display = "block";
+		document.querySelector(".headline").setAttribute("class", "headline toggle");
+		return;
+	}
 	let attraction = data.attraction;
 	document.querySelector(".headline span").innerText = user.name;
 	document.querySelector(".info .name").innerText = `台北一日遊：${attraction.name}`;
@@ -148,8 +157,20 @@ async function load(user) {
 	document.querySelector("#email").value = user.email;
 	document.querySelector("p.total").innerText = `總價：新台幣 ${data.price} 元`;
 
-
-	// console.log(resData);
+	let cancel = document.querySelector(".delete");
+	cancel.addEventListener("click", async function () {
+		let token = localStorage.getItem("token");
+		let url = "/api/booking";
+		let request = new Request(url, {
+			method: "DELETE",
+			headers: { "Authorization": `Bearer ${token}` },
+		});
+		let res = await fetch(request);
+		let resData = await res.json();
+		if (resData.ok) {
+			location.href = "/booking";
+		}
+	});
 }
 
 

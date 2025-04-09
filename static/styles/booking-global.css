@@ -284,9 +284,24 @@ body {
 	margin: auto;
 	margin-top: 40px;
 	padding: 0 100px;
+	/* padding: 0 110px; */
 	font-size: 19px;
 	font-weight: 700;
 	line-height: 27px;
+}
+
+.toggle {
+	padding: 0 110px;
+}
+
+
+
+.hidden {
+	max-width: 1200px;
+	margin: auto;
+	margin-top: 33.5px;
+	margin-bottom: 44px;
+	padding: 0 110px;
 }
 
 
@@ -342,6 +357,10 @@ body {
 	position: absolute;
 	top: 0;
 	right: 110px;
+}
+
+.section .delete:hover {
+	cursor: pointer;
 }
 
 

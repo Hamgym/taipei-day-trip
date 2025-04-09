@@ -13,15 +13,13 @@ async function frontInit() {
 	}
 
 	let booking = document.querySelector(".navigation a");
-	// booking.addEventListener("click", async function () {
-	// 	let url = "/booking";
-	// 	let request = new Request(url, {
-	// 		headers: { "Authorization": `Bearer ${token}` },
-	// 	});
-	// 	let res = await fetch(request);
-	// 	let resData = await res.json();
-	// });
-	// console.log(booking);
+	booking.addEventListener("click", async function () {
+		if (user) {
+			location.href = "/booking";
+		} else {
+			document.querySelector(".sign").click();
+		}
+	});
 
 	let mask = document.querySelector("div.mask");
 	let title = document.querySelector(".navigation h2");

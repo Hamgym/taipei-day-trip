@@ -4,6 +4,12 @@
 
 
 
+.hidden {
+	padding: 0 130px;
+}
+
+
+
 .section {
 	margin: 0 20px;
 	margin-top: 29.5px;
@@ -34,6 +40,12 @@
 
 @media screen and (width <=900px) {
 	.headline {
+		padding: 0 40px;
+	}
+
+
+
+	.hidden {
 		padding: 0 40px;
 	}
 

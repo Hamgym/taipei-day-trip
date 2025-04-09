@@ -213,22 +213,43 @@ async def get_booking(authorization:str=Header()):
   try:
     cursor.execute("SELECT attraction.id, attraction.name, attraction.address, attraction.images, booking.date, booking.time, booking.price FROM booking JOIN attraction ON booking.attraction_id=attraction.id WHERE booking.user_id=%s", (payload["id"],))
     row = cursor.fetchone()
-    data = {
-      "attraction": {
-        "id": row[0],
-        "name": row[1],
-        "address": row[2],
-        "image": json.loads(row[3])[0]
-      },
-      "date": row[4],
-      "time": row[5],
-      "price": row[6]
-    }
-    cnx.close()
-    return {"data": data}
+    if(row):
+      data = {
+        "attraction": {
+          "id": row[0],
+          "name": row[1],
+          "address": row[2],
+          "image": json.loads(row[3])[0]
+        },
+        "date": row[4],
+        "time": row[5],
+        "price": row[6]
+      }
+      cnx.close()
+      return {"data": data}
+    else:
+      cnx.close()
+      return {"data": None}
   except:
     cnx.close()
     return JSONResponse({
       "error": True,
       "message": "建立失敗，輸入不正確或其他原因"
     }, 400)
+@app.delete("/api/booking")
+async def delete_booking(authorization:str=Header()):
+  payload = {}
+  try:
+    [scheme, token] = authorization.split()
+    payload = jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
+  except:
+    return JSONResponse({
+      "error": True,
+      "message": "未登入系統，拒絕存取"
+    }, 403)
+  cnx = cnxpool.get_connection()
+  cursor = cnx.cursor()
+  cursor.execute("DELETE FROM booking WHERE user_id=%s", (payload["id"],))
+  cnx.commit()
+  cnx.close()
+  return JSONResponse({"ok": True})
