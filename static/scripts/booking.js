@@ -1,4 +1,4 @@
-frontInit();
+let initialized = frontInit();
 async function frontInit() {
 	let user = null;
 	let token = localStorage.getItem("token");
@@ -10,6 +10,13 @@ async function frontInit() {
 		let res = await fetch(request);
 		let resData = await res.json();
 		user = resData.data;
+		if (user == null) {
+			location.href = "/";
+		} else {
+			document.body.style.display = "block";
+		}
+	} else {
+		location.href = "/";
 	}
 
 	let mask = document.querySelector("div.mask");
@@ -113,9 +120,37 @@ async function frontInit() {
 			location.href = "/";
 		}
 	});
+	return user;
 }
 
 
+initialized.then(load);
+async function load(user) {
+	let token = localStorage.getItem("token");
+	let url = "/api/booking";
+	let request = new Request(url, {
+		headers: { "Authorization": `Bearer ${token}` },
+	});
+	let res = await fetch(request);
+	let resData = await res.json();
+	let data = resData.data;
+	let attraction = data.attraction;
+	document.querySelector(".headline span").innerText = user.name;
+	document.querySelector(".info .name").innerText = `台北一日遊：${attraction.name}`;
+	document.querySelector(".address span").innerText = attraction.address;
+	document.querySelector(".section>img").setAttribute("src", attraction.image);
+	document.querySelector(".date>span").innerText = data.date;
+	if (data.time == "afternoon") {
+		document.querySelector(".time>span").innerText = "下午 2 點到晚上 9 點";
+	}
+	document.querySelector(".cost>span").innerText = `新台幣 ${data.price} 元`;
+	document.querySelector("#name").value = user.name;
+	document.querySelector("#email").value = user.email;
+	document.querySelector("p.total").innerText = `總價：新台幣 ${data.price} 元`;
+
+
+	// console.log(resData);
+}
 
 
 

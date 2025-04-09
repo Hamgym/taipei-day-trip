@@ -62,61 +62,6 @@ class Booking(BaseModel):
   price: Literal[2000, 2500]
 
 
-from fastapi.responses import RedirectResponse
-@app.middleware("http")
-async def check_signin_status(request:Request, call_next):
-  if request.scope["path"].find("booking", 0, 12) != -1:
-    pass
-    # print("booking!!!")
-    # return RedirectResponse("/")
-    # print(request.headers.get("authorization"))
-    # return JSONResponse("請登入", 401)
-  response = await call_next(request)
-  return response
-
-
-import jwt
-from datetime import datetime, timezone, timedelta
-@app.post("/api/user")
-async def post_user(user: SignUp):
-  cnx = cnxpool.get_connection()
-  cursor = cnx.cursor()
-  try:
-    cursor.execute("INSERT INTO user(name, email, password) VALUE(%s, %s, %s)", (user.name, user.email, user.password))
-    cnx.commit()
-    cnx.close()
-    return {"ok": True}
-  except:
-    cnx.close()
-    return JSONResponse({"error":True, "message":"註冊失敗，重複的 Email"}, 400)
-@app.put("/api/user/auth")
-async def put_auth(user: SignIn):
-  cnx = cnxpool.get_connection()
-  cursor = cnx.cursor()
-  cursor.execute("SELECT * FROM user WHERE email=%s AND password=%s", (user.email, user.password))
-  row = cursor.fetchone()
-  if(row):
-    payload = {"id":row[0], "name":row[1], "email":row[2]}
-    payload["exp"] = datetime.now(timezone.utc) + timedelta(weeks=1)
-    encoded_jwt = jwt.encode(payload, os.getenv("JWT_SECRET"), algorithm="HS256")
-    cnx.close()
-    return {"token": encoded_jwt}
-  else:
-    cnx.close()
-    return JSONResponse({"error":True, "message":"登入失敗，帳號或密碼錯誤"}, 400)
-@app.get("/api/user/auth")
-async def get_auth(authorization: str = Header()):
-  # if scheme != "Bearer":
-  #   return {"data": None}
-  try:
-    [scheme, token] = authorization.split()
-    payload = jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
-    payload.pop("exp")
-    return {"data": payload}
-  except:
-    return {"data": None}
-
-
 import json
 @app.get("/api/attractions")
 async def get_attractions(page:int=Query(ge=0), keyword:str=Query(None)):
@@ -187,6 +132,46 @@ async def get_mrts():
   return {"data": data}
 
 
+import jwt
+from datetime import datetime, timezone, timedelta
+@app.post("/api/user")
+async def post_user(user: SignUp):
+  cnx = cnxpool.get_connection()
+  cursor = cnx.cursor()
+  try:
+    cursor.execute("INSERT INTO user(name, email, password) VALUE(%s, %s, %s)", (user.name, user.email, user.password))
+    cnx.commit()
+    cnx.close()
+    return {"ok": True}
+  except:
+    cnx.close()
+    return JSONResponse({"error":True, "message":"註冊失敗，重複的 Email"}, 400)
+@app.put("/api/user/auth")
+async def put_auth(user: SignIn):
+  cnx = cnxpool.get_connection()
+  cursor = cnx.cursor()
+  cursor.execute("SELECT * FROM user WHERE email=%s AND password=%s", (user.email, user.password))
+  row = cursor.fetchone()
+  if(row):
+    payload = {"id":row[0], "name":row[1], "email":row[2]}
+    payload["exp"] = datetime.now(timezone.utc) + timedelta(weeks=1)
+    encoded_jwt = jwt.encode(payload, os.getenv("JWT_SECRET"), algorithm="HS256")
+    cnx.close()
+    return {"token": encoded_jwt}
+  else:
+    cnx.close()
+    return JSONResponse({"error":True, "message":"登入失敗，帳號或密碼錯誤"}, 400)
+@app.get("/api/user/auth")
+async def get_auth(authorization: str = Header()):
+  try:
+    [scheme, token] = authorization.split()
+    payload = jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
+    payload.pop("exp")
+    return {"data": payload}
+  except:
+    return {"data": None}
+
+
 @app.post("/api/booking")
 async def post_booking(authorization:str=Header(), body:Booking=Body()):
   payload = {}
@@ -212,3 +197,38 @@ async def post_booking(authorization:str=Header(), body:Booking=Body()):
     }, 400)
   cnx.close()
   return {"ok": True}
+@app.get("/api/booking")
+async def get_booking(authorization:str=Header()):
+  payload = {}
+  try:
+    [scheme, token] = authorization.split()
+    payload = jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
+  except:
+    return JSONResponse({
+      "error": True,
+      "message": "未登入系統，拒絕存取"
+    }, 403)
+  cnx = cnxpool.get_connection()
+  cursor = cnx.cursor()
+  try:
+    cursor.execute("SELECT attraction.id, attraction.name, attraction.address, attraction.images, booking.date, booking.time, booking.price FROM booking JOIN attraction ON booking.attraction_id=attraction.id WHERE booking.user_id=%s", (payload["id"],))
+    row = cursor.fetchone()
+    data = {
+      "attraction": {
+        "id": row[0],
+        "name": row[1],
+        "address": row[2],
+        "image": json.loads(row[3])[0]
+      },
+      "date": row[4],
+      "time": row[5],
+      "price": row[6]
+    }
+    cnx.close()
+    return {"data": data}
+  except:
+    cnx.close()
+    return JSONResponse({
+      "error": True,
+      "message": "建立失敗，輸入不正確或其他原因"
+    }, 400)
