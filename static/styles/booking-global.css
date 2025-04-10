@@ -8,7 +8,7 @@
 	font-family: inherit;
 	font-optical-sizing: inherit;
 	text-decoration: none;
-	scrollbar-width: none;
+	/* scrollbar-width: none; */
 }
 
 html {

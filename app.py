@@ -56,7 +56,7 @@ class SignIn(BaseModel):
 class SignUp(SignIn):
   name: str = Field(min_length=1)
 class Booking(BaseModel):
-  attractionId: int
+  attractionId: int = Field(ge=1)
   date: date
   time: Literal["morning", "afternoon"]
   price: Literal[2000, 2500]
@@ -162,7 +162,7 @@ async def put_auth(user: SignIn):
     cnx.close()
     return JSONResponse({"error":True, "message":"登入失敗，帳號或密碼錯誤"}, 400)
 @app.get("/api/user/auth")
-async def get_auth(authorization: str = Header()):
+async def get_auth(authorization:str=Header()):
   try:
     [scheme, token] = authorization.split()
     payload = jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
@@ -189,14 +189,14 @@ async def post_booking(authorization:str=Header(), body:Booking=Body()):
     cursor.execute("DELETE FROM booking WHERE user_id=%s", (payload["id"],))
     cursor.execute("INSERT INTO booking(user_id, attraction_id, date, time, price) VALUES(%s, %s, %s, %s, %s)", (payload["id"], body.attractionId, body.date, body.time, body.price))
     cnx.commit()
+    cnx.close()
+    return {"ok": True}
   except:
     cnx.close()
     return JSONResponse({
       "error": True,
       "message": "建立失敗，輸入不正確或其他原因"
     }, 400)
-  cnx.close()
-  return {"ok": True}
 @app.get("/api/booking")
 async def get_booking(authorization:str=Header()):
   payload = {}
@@ -210,32 +210,24 @@ async def get_booking(authorization:str=Header()):
     }, 403)
   cnx = cnxpool.get_connection()
   cursor = cnx.cursor()
-  try:
-    cursor.execute("SELECT attraction.id, attraction.name, attraction.address, attraction.images, booking.date, booking.time, booking.price FROM booking JOIN attraction ON booking.attraction_id=attraction.id WHERE booking.user_id=%s", (payload["id"],))
-    row = cursor.fetchone()
-    if(row):
-      data = {
-        "attraction": {
-          "id": row[0],
-          "name": row[1],
-          "address": row[2],
-          "image": json.loads(row[3])[0]
-        },
-        "date": row[4],
-        "time": row[5],
-        "price": row[6]
-      }
-      cnx.close()
-      return {"data": data}
-    else:
-      cnx.close()
-      return {"data": None}
-  except:
+  cursor.execute("SELECT attraction.id, attraction.name, attraction.address, attraction.images, booking.date, booking.time, booking.price FROM booking JOIN attraction ON booking.attraction_id=attraction.id WHERE booking.user_id=%s", (payload["id"],))
+  row = cursor.fetchone()
+  if(row == None):
     cnx.close()
-    return JSONResponse({
-      "error": True,
-      "message": "建立失敗，輸入不正確或其他原因"
-    }, 400)
+    return {"data": None}
+  data = {
+      "attraction": {
+        "id": row[0],
+        "name": row[1],
+        "address": row[2],
+        "image": json.loads(row[3])[0]
+      },
+      "date": row[4],
+      "time": row[5],
+      "price": row[6]
+    }
+  cnx.close()
+  return {"data": data}
 @app.delete("/api/booking")
 async def delete_booking(authorization:str=Header()):
   payload = {}

@@ -13,11 +13,20 @@ async function frontInit() {
 		if (user == null) {
 			location.href = "/";
 		} else {
-			document.body.style.display = "block";
+			// document.body.style.display = "block";
 		}
 	} else {
 		location.href = "/";
 	}
+
+	let booking = document.querySelector(".navigation a");
+	booking.addEventListener("click", async function () {
+		if (user) {
+			location.href = "/booking";
+		} else {
+			document.querySelector(".sign").click();
+		}
+	});
 
 	let mask = document.querySelector("div.mask");
 	let title = document.querySelector(".navigation h2");
@@ -135,44 +144,46 @@ async function load(user) {
 	let resData = await res.json();
 	let data = resData.data;
 	if (data == null) {
+		document.querySelector(".headline span").innerText = user.name;
+		document.querySelector(".headline").setAttribute("class", "headline toggle");
+		document.querySelector(".hidden").style.display = "block";
 		document.querySelector(".section").style.display = "none";
 		document.querySelector(".contact").style.display = "none";
 		document.querySelector(".payment").style.display = "none";
 		document.querySelector(".confirm").style.display = "none";
-		document.querySelector(".hidden").style.display = "block";
-		document.querySelector(".headline").setAttribute("class", "headline toggle");
+		document.body.style.display = "block";
 		return;
 	}
-	let attraction = data.attraction;
-	document.querySelector(".headline span").innerText = user.name;
-	document.querySelector(".info .name").innerText = `台北一日遊：${attraction.name}`;
-	document.querySelector(".address span").innerText = attraction.address;
-	document.querySelector(".section>img").setAttribute("src", attraction.image);
-	document.querySelector(".date>span").innerText = data.date;
-	if (data.time == "afternoon") {
-		document.querySelector(".time>span").innerText = "下午 2 點到晚上 9 點";
-	}
-	document.querySelector(".cost>span").innerText = `新台幣 ${data.price} 元`;
-	document.querySelector("#name").value = user.name;
-	document.querySelector("#email").value = user.email;
-	document.querySelector("p.total").innerText = `總價：新台幣 ${data.price} 元`;
-
-	let cancel = document.querySelector(".delete");
-	cancel.addEventListener("click", async function () {
-		let token = localStorage.getItem("token");
-		let url = "/api/booking";
-		let request = new Request(url, {
-			method: "DELETE",
-			headers: { "Authorization": `Bearer ${token}` },
-		});
-		let res = await fetch(request);
-		let resData = await res.json();
-		if (resData.ok) {
-			location.href = "/booking";
+	else {
+		let attraction = data.attraction;
+		document.querySelector(".headline span").innerText = user.name;
+		document.querySelector(".info .name").innerText = `台北一日遊：${attraction.name}`;
+		document.querySelector(".address span").innerText = attraction.address;
+		document.querySelector(".section>img").setAttribute("src", attraction.image);
+		document.querySelector(".date>span").innerText = data.date;
+		if (data.time == "afternoon") {
+			document.querySelector(".time>span").innerText = "下午 2 點到晚上 9 點";
 		}
-	});
+		document.querySelector(".cost>span").innerText = `新台幣 ${data.price} 元`;
+		document.querySelector("#name").value = user.name;
+		document.querySelector("#email").value = user.email;
+		document.querySelector("p.total").innerText = `總價：新台幣 ${data.price} 元`;
+
+		let cancel = document.querySelector(".delete");
+		cancel.addEventListener("click", async function () {
+			let token = localStorage.getItem("token");
+			let url = "/api/booking";
+			let request = new Request(url, {
+				method: "DELETE",
+				headers: { "Authorization": `Bearer ${token}` },
+			});
+			let res = await fetch(request);
+			let resData = await res.json();
+			if (resData.ok) {
+				location.href = "/booking";
+			}
+		});
+
+		document.body.style.display = "block";
+	}
 }
-
-
-
-

@@ -1,8 +1,8 @@
-let token = localStorage.getItem("token");
+let user = null;
 frontInit();
 async function frontInit() {
-	let user = null;
-	// let token = localStorage.getItem("token");
+	// let user = null;
+	let token = localStorage.getItem("token");
 	if (token) {
 		let url = "/api/user/auth";
 		let request = new Request(url, {
@@ -12,6 +12,15 @@ async function frontInit() {
 		let resData = await res.json();
 		user = resData.data;
 	}
+
+	let booking = document.querySelector(".navigation a");
+	booking.addEventListener("click", async function () {
+		if (user) {
+			location.href = "/booking";
+		} else {
+			document.querySelector(".sign").click();
+		}
+	});
 
 	let mask = document.querySelector("div.mask");
 	let title = document.querySelector(".navigation h2");
@@ -116,6 +125,7 @@ async function frontInit() {
 	});
 }
 
+
 load();
 async function load() {
 	let id = location.pathname.slice(12);
@@ -211,7 +221,7 @@ async function load() {
 	let form = document.querySelector(`[class="booking"]`);
 	form.addEventListener("submit", async function (event) {
 		event.preventDefault();
-		if (!token) {
+		if (user == null) {
 			let sign = document.querySelector(".sign");
 			sign.click();
 			return;
@@ -231,6 +241,7 @@ async function load() {
 			price = 2500;
 		};
 		if (date && time) {
+			let token = localStorage.getItem("token");
 			let url = "/api/booking";
 			let request = new Request(url, {
 				method: "POST",
