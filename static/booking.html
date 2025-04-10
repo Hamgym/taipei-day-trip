@@ -1,11 +1,122 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Booking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+Mono+TC&family=LXGW+WenKai+TC&family=Noto+Sans+TC:wght@100..900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles/booking-global.css">
+  <link rel="stylesheet" href="/static/styles/booking-tablet.css"
+    media="(600px < width <= 1200px)">
+  <link rel="stylesheet" href="/static/styles/booking-mobile.css"
+    media="(width <= 600px)">
+  <script type="module" src="/static/scripts/booking.js"></script>
 </head>
-<body>
-  
+
+<body style="display: none;">
+  <div class="mask"></div>
+  <div class="signin-dialog">
+    <div class="decorator-bar"></div>
+    <div class="close"></div>
+    <div class="signin-main">
+      <h3>登入會員帳號</h3>
+      <form action="" method="post">
+        <input type="email" name="email" placeholder="輸入電子信箱">
+        <input type="password" name="password" placeholder="輸入密碼" minlength="3">
+        <input type="submit" value="登入帳戶">
+        <p class="message" style="display:none">回應訊息</p>
+        <div class="signup">還沒有帳戶？點此註冊</div>
+      </form>
+    </div>
+  </div>
+  <div class="signup-dialog">
+    <div class="decorator-bar"></div>
+    <div class="close"></div>
+    <div class="signup-main">
+      <h3>註冊會員帳號</h3>
+      <form action="" method="post">
+        <input type="text" name="name" placeholder="輸入姓名" maxlength="20">
+        <input type="email" name="email" placeholder="輸入電子郵件">
+        <input type="password" name="password" placeholder="輸入密碼" minlength="3">
+        <input type="submit" value="註冊新帳戶">
+        <p class="message" style="display:none">回應訊息</p>
+        <div class="signin">已經有帳戶了？點此登入</div>
+      </form>
+    </div>
+  </div>
+
+  <div class="navigation">
+    <div>
+      <h2>台北一日遊</h2>
+      <div class="container">
+        <a href="#">預定行程</a>
+        <!-- <div class="sign">登入/註冊</div> -->
+        <div class="sign"></div>
+      </div>
+    </div>
+  </div>
+  <div class="headline">
+    您好，<span>Yakko</span>，待預訂的行程如下：
+  </div>
+  <div class="hidden" style="display: none;">
+    目前沒有任何待預訂的行程
+  </div>
+  <div class="section">
+    <!-- <img src="/static/images/img.svg" alt=""> -->
+    <img>
+    <div class="info">
+      <p class="name">台北一日遊：平安鐘</p>
+      <p class="date">日期：<span>2021-04-23</span></p>
+      <p class="time">時間：<span>早上 9 點到下午 4 點</span></p>
+      <p class="cost">費用：<span>新台幣 2000 元</span></p>
+      <p class="address">地點：<span>臺北市 大安區忠孝東路4段</span></p>
+    </div>
+    <div class="delete"></div>
+  </div>
+  <div class="contact">
+    <h3>您的聯絡資訊</h3>
+    <div class="name">
+      <label for="name">聯絡姓名：</label>
+      <input type="text" name="name" id="name" value="Yakko">
+    </div>
+    <div class="email">
+      <label for="email">連絡信箱：</label>
+      <input type="email" name="email" id="email" value="wehelp@pada-x.com">
+    </div>
+    <div class="phone">
+      <label for="phone">手機號碼：</label>
+      <input type="text" name="phone" id="phone">
+    </div>
+    <p class="notice">請保持手機暢通，準時到達，導覽人員將用手機與您聯繫，務必留下正確的聯絡方式。</p>
+  </div>
+  <div class="payment">
+    <h3>信用卡付款資訊</h3>
+    <div class="card">
+      <label for="card">卡片號碼：</label>
+      <input type="text" name="card" id="card"
+        placeholder="**** **** **** ****">
+    </div>
+    <div class="exp">
+      <label for="exp">過期時間：</label>
+      <input type="text" name="exp" id="exp" placeholder="MM / YY">
+    </div>
+    <div class="cvv">
+      <label for="cvv">驗證密碼：</label>
+      <input type="text" name="cvv" id="cvv" placeholder="CVV">
+    </div>
+  </div>
+  <div class="confirm">
+    <p class="total">總價：新台幣 2000 元</p>
+    <button>確認訂購並付款</button>
+  </div>
+  <div class="footer">
+    <p>COPYRIGHT © 2021 台北一日遊</p>
+  </div>
 </body>
+
 </html>

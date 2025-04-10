@@ -1,4 +1,4 @@
-frontInit();
+let initialized = frontInit();
 async function frontInit() {
 	let user = null;
 	let token = localStorage.getItem("token");
@@ -10,6 +10,13 @@ async function frontInit() {
 		let res = await fetch(request);
 		let resData = await res.json();
 		user = resData.data;
+		if (user == null) {
+			location.href = "/";
+		} else {
+			// document.body.style.display = "block";
+		}
+	} else {
+		location.href = "/";
 	}
 
 	let booking = document.querySelector(".navigation a");
@@ -122,109 +129,61 @@ async function frontInit() {
 			location.href = "/";
 		}
 	});
-
-
-
-	let list = document.querySelector(".list");
-	let leftBtn = document.querySelector("button.left");
-	let rightBtn = document.querySelector("button.right");
-	leftBtn.addEventListener("click", function () {
-		list.scrollBy({ left: -300, behavior: "smooth" });
-	});
-	rightBtn.addEventListener("click", function () {
-		list.scrollBy({ left: 300, behavior: "smooth" });
-	});
+	return user;
 }
 
 
-let keyword = "";
-let loading = false;
-let nextPage = null;
-let loadedPage = [];
-loadInit();
-async function loadInit() {
-	let list = document.querySelector("div.list");
-	if (list.children.length == 1) {
-		let res = await fetch("/api/mrts");
-		let rawData = await res.json();
-		let mrts = rawData.data;
-		let protoItem = list.firstElementChild;
-		let searchBtn = document.querySelector(".slogan button");
-		for (let mrt of mrts) {
-			let item = protoItem.cloneNode(true);
-			item.style.display = "block";
-			item.innerText = mrt;
-			let searchField = document.querySelector(".slogan input");
-			item.addEventListener("click", function () {
-				searchField.value = item.innerText;
-				searchBtn.click();
-			});
-			list.appendChild(item);
+initialized.then(load);
+async function load(user) {
+	let token = localStorage.getItem("token");
+	let url = "/api/booking";
+	let request = new Request(url, {
+		headers: { "Authorization": `Bearer ${token}` },
+	});
+	let res = await fetch(request);
+	let resData = await res.json();
+	let data = resData.data;
+	if (data == null) {
+		document.querySelector(".headline span").innerText = user.name;
+		document.querySelector(".headline").setAttribute("class", "headline toggle");
+		document.querySelector(".hidden").style.display = "block";
+		document.querySelector(".section").style.display = "none";
+		document.querySelector(".contact").style.display = "none";
+		document.querySelector(".payment").style.display = "none";
+		document.querySelector(".confirm").style.display = "none";
+		document.body.style.display = "block";
+		return;
+	}
+	else {
+		let attraction = data.attraction;
+		document.querySelector(".headline span").innerText = user.name;
+		document.querySelector(".info .name").innerText = `台北一日遊：${attraction.name}`;
+		document.querySelector(".address span").innerText = attraction.address;
+		document.querySelector(".section>img").setAttribute("src", attraction.image);
+		document.querySelector(".date>span").innerText = data.date;
+		if (data.time == "afternoon") {
+			document.querySelector(".time>span").innerText = "下午 2 點到晚上 9 點";
 		}
-	}
-	let attractions = document.querySelector("div.attractions");
-	while (attractions.children.length > 1) {
-		attractions.removeChild(attractions.lastElementChild);
-	}
-	nextPage = 0;
-	loadedPage.length = 0;
-	loadOne();
-}
-async function loadOne() {
-	if (nextPage == null || loadedPage.includes(nextPage) || loading) {
-		return;
-	}
-	loading = true;
-	loadedPage.push(nextPage);
-	let res = await fetch(`./api/attractions?page=${nextPage}&keyword=${keyword}`);
-	let rawData = await res.json();
-	let pageData = rawData.data;
-	let protoAttraction = document.querySelector("div.attraction");
-	let attractions = document.querySelector("div.attractions");
-	for (let data of pageData) {
-		let attraction = protoAttraction.cloneNode(true);
-		attraction.style.display = "block";
-		let container = attraction.querySelector(".container");
-		container.addEventListener("click", () => {
-			window.location.href = `/attraction/${data.id}`;
+		document.querySelector(".cost>span").innerText = `新台幣 ${data.price} 元`;
+		document.querySelector("#name").value = user.name;
+		document.querySelector("#email").value = user.email;
+		document.querySelector("p.total").innerText = `總價：新台幣 ${data.price} 元`;
+
+		let cancel = document.querySelector(".delete");
+		cancel.addEventListener("click", async function () {
+			let token = localStorage.getItem("token");
+			let url = "/api/booking";
+			let request = new Request(url, {
+				method: "DELETE",
+				headers: { "Authorization": `Bearer ${token}` },
+			});
+			let res = await fetch(request);
+			let resData = await res.json();
+			if (resData.ok) {
+				location.href = "/booking";
+			}
 		});
-		let name = attraction.querySelector("p.name");
-		name.innerText = data.name;
-		let category = attraction.querySelector("p.category");
-		category.innerText = data.category;
-		let image = attraction.querySelector("img");
-		image.setAttribute("src", data.images[0]);
-		let mrt = attraction.querySelector("p.mrt");
-		mrt.innerText = data.mrt;
-		attractions.appendChild(attraction);
+
+		document.body.style.display = "block";
 	}
-	nextPage = rawData.nextPage;
-	loading = false;
 }
-
-
-let footerObserver = new IntersectionObserver(async (entries) => {
-	if (entries[0].intersectionRatio <= 0 || nextPage == null || loadedPage.includes(nextPage) || loading) {
-		return;
-	}
-	loadOne();
-});
-footerObserver.observe(document.querySelector("div.footer"));
-
-
-let searchBtn = document.querySelector(".slogan button");
-let searchField = document.querySelector(".slogan input");
-searchBtn.addEventListener("click", function () {
-	if (loading) {
-		return;
-	}
-	keyword = searchField.value;
-	loadInit();
-});
-searchField.addEventListener("keydown", function (event) {
-	if (event.key == "Enter") {
-		event.preventDefault();
-		searchBtn.click();
-	}
-});
-
