@@ -1,6 +1,13 @@
+from dotenv import load_dotenv
+load_dotenv()
+
+
 from fastapi import *
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.exceptions import RequestValidationError
+from fastapi.staticfiles import StaticFiles
 app=FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 # Static Pages (Never Modify Code in this Block)
@@ -18,27 +25,10 @@ async def thankyou(request: Request):
   return FileResponse("./static/thankyou.html", media_type="text/html")
 
 
-from fastapi.staticfiles import StaticFiles
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-
-from dotenv import load_dotenv
-load_dotenv()
-import os
-from mysql.connector.pooling import MySQLConnectionPool
-dbconfig = {
-  "user": os.getenv("DB_USER"),
-  "password": os.getenv("DB_PASSWORD"),
-  "host": "localhost",
-  "database": "taipei_day_trip"
-}
-cnxpool = MySQLConnectionPool(pool_size=5, **dbconfig)
-select_all = "SELECT attraction.id, attraction.name, category, description, address, transport, mrt.name, lat, lng, images FROM attraction LEFT JOIN mrt ON attraction.mrt=mrt.id "
-
-
-from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
-from mysql.connector.errors import PoolError
+import os, json, jwt
+from datetime import datetime, timezone, timedelta
+from models.mysql import PoolError, cnxpool, select_all
+from models.data import SignIn, SignUp, Booking
 @app.exception_handler(PoolError)
 async def pool_error(request:Request, exc:PoolError):
   return JSONResponse({"error":True, "message":"資料庫忙線中"}, 500)
@@ -47,29 +37,13 @@ async def validation_exception_handler(request, exc):
   return JSONResponse({"error":True, "message":"資料格式不符，請重新輸入"}, 400)
 
 
-from pydantic import BaseModel, Field
-from datetime import date
-from typing import Literal
-class SignIn(BaseModel):
-  email: str = Field(min_length=3)
-  password: str = Field(min_length=3)
-class SignUp(SignIn):
-  name: str = Field(min_length=1)
-class Booking(BaseModel):
-  attractionId: int = Field(ge=1)
-  date: date
-  time: Literal["morning", "afternoon"]
-  price: Literal[2000, 2500]
-
-
-import json
 @app.get("/api/attractions")
 async def get_attractions(page:int=Query(ge=0), keyword:str=Query(None)):
   cnx = cnxpool.get_connection()
   cursor = cnx.cursor()
   limit = 12
   offset = page * limit
-  if keyword == None:
+  if keyword==None:
     cursor.execute(select_all+"LIMIT %s OFFSET %s", (limit, offset))
   else:
     name = "%"+keyword+"%"
@@ -97,12 +71,12 @@ async def get_attractions(page:int=Query(ge=0), keyword:str=Query(None)):
   cnx.close()
   return {"nextPage": next_page, "data": data}
 @app.get("/api/attraction/{attractionId}")
-async def get_attraction_by_id(attractionId: int):
+async def get_attraction_by_id(attractionId:int):
   cnx = cnxpool.get_connection()
   cursor = cnx.cursor()
   cursor.execute(select_all+"WHERE attraction.id=%s", (attractionId,))
   record = cursor.fetchone()
-  if record == None:
+  if record==None:
     cnx.close()
     return JSONResponse({"error":True,"message":"景點編號不正確"}, 400)
   else:
@@ -132,10 +106,8 @@ async def get_mrts():
   return {"data": data}
 
 
-import jwt
-from datetime import datetime, timezone, timedelta
 @app.post("/api/user")
-async def post_user(user: SignUp):
+async def post_user(user:SignUp):
   cnx = cnxpool.get_connection()
   cursor = cnx.cursor()
   try:
@@ -147,7 +119,7 @@ async def post_user(user: SignUp):
     cnx.close()
     return JSONResponse({"error":True, "message":"註冊失敗，重複的 Email"}, 400)
 @app.put("/api/user/auth")
-async def put_auth(user: SignIn):
+async def put_auth(user:SignIn):
   cnx = cnxpool.get_connection()
   cursor = cnx.cursor()
   cursor.execute("SELECT * FROM user WHERE email=%s AND password=%s", (user.email, user.password))
