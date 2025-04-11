@@ -9,3 +9,11 @@ dbconfig = {
 }
 cnxpool = MySQLConnectionPool(pool_size=5, **dbconfig)
 select_all = "SELECT attraction.id, attraction.name, category, description, address, transport, mrt.name, lat, lng, images FROM attraction LEFT JOIN mrt ON attraction.mrt=mrt.id "
+
+
+async def get_cnx():
+  cnx = cnxpool.get_connection()
+  try:
+    yield cnx
+  finally:
+    cnx.close()
