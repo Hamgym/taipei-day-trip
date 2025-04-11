@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field
 from datetime import date
 from typing import Literal
+
+
 class SignIn(BaseModel):
   email: str = Field(min_length=3)
   password: str = Field(min_length=3)

@@ -27,7 +27,7 @@ async def thankyou(request: Request):
 
 import os, json, jwt
 from datetime import datetime, timezone, timedelta
-from models.mysql import PoolError, select_all, get_cnx
+from models.mysql import *
 from models.data import SignIn, SignUp, Booking
 from models.auth import AuthError, jwt_payload, jwt_auth
 @app.exception_handler(PoolError)
@@ -47,10 +47,10 @@ async def get_attractions(page:int=Query(ge=0), keyword:str=Query(None), cnx=Dep
   limit = 12
   offset = page * limit
   if keyword==None:
-    cursor.execute(select_all+"LIMIT %s OFFSET %s", (limit, offset))
+    cursor.execute(select_one_page, (limit, offset))
   else:
     name = "%"+keyword+"%"
-    cursor.execute(select_all+"WHERE attraction.name LIKE %s OR mrt.name=%s LIMIT %s OFFSET %s", (name, keyword, limit, offset))
+    cursor.execute(select_by_keyword, (name, keyword, limit, offset))
   records = cursor.fetchall()
   if len(records) < 12:
     next_page = None
@@ -71,14 +71,14 @@ async def get_attractions(page:int=Query(ge=0), keyword:str=Query(None), cnx=Dep
     tmp["images"] = json.loads(record[9])
     data.append(tmp.copy())
     tmp.clear()
-  return {"nextPage": next_page, "data": data}
+  return {"nextPage":next_page, "data":data}
 @app.get("/api/attraction/{attractionId}")
 async def get_attraction_by_id(attractionId:int, cnx=Depends(get_cnx)):
   cursor = cnx.cursor()
-  cursor.execute(select_all+"WHERE attraction.id=%s", (attractionId,))
+  cursor.execute(select_attraction, (attractionId,))
   record = cursor.fetchone()
   if record==None:
-    return JSONResponse({"error":True,"message":"景點編號不正確"}, 400)
+    return JSONResponse({"error":True, "message":"景點編號不正確"}, 400)
   data = {}
   data["id"] = record[0]
   data["name"] = record[1]
@@ -94,7 +94,7 @@ async def get_attraction_by_id(attractionId:int, cnx=Depends(get_cnx)):
 @app.get("/api/mrts")
 async def get_mrts(cnx=Depends(get_cnx)):
   cursor = cnx.cursor()
-  cursor.execute("SELECT name FROM mrt")
+  cursor.execute(select_mrts)
   records = cursor.fetchall()
   data = []
   for record in records:
@@ -106,7 +106,7 @@ async def get_mrts(cnx=Depends(get_cnx)):
 async def post_user(user:SignUp, cnx=Depends(get_cnx)):
   cursor = cnx.cursor()
   try:
-    cursor.execute("INSERT INTO user(name, email, password) VALUE(%s, %s, %s)", (user.name, user.email, user.password))
+    cursor.execute(insert_user, (user.name, user.email, user.password))
     cnx.commit()
     return {"ok": True}
   except:
@@ -114,9 +114,9 @@ async def post_user(user:SignUp, cnx=Depends(get_cnx)):
 @app.put("/api/user/auth")
 async def put_auth(user:SignIn, cnx=Depends(get_cnx)):
   cursor = cnx.cursor()
-  cursor.execute("SELECT * FROM user WHERE email=%s AND password=%s", (user.email, user.password))
+  cursor.execute(select_user, (user.email, user.password))
   row = cursor.fetchone()
-  if(row==None):
+  if row==None:
     return JSONResponse({"error":True, "message":"登入失敗，帳號或密碼錯誤"}, 400)
   payload = {"id":row[0], "name":row[1], "email":row[2]}
   payload["exp"] = datetime.now(timezone.utc) + timedelta(weeks=1)
@@ -131,8 +131,8 @@ async def get_auth(payload=Depends(jwt_payload)):
 async def post_booking(payload=Depends(jwt_auth), body:Booking=Body(), cnx=Depends(get_cnx)):
   cursor = cnx.cursor()
   try:
-    cursor.execute("DELETE FROM booking WHERE user_id=%s", (payload["id"],))
-    cursor.execute("INSERT INTO booking(user_id, attraction_id, date, time, price) VALUES(%s, %s, %s, %s, %s)", (payload["id"], body.attractionId, body.date, body.time, body.price))
+    cursor.execute(delete_book, (payload["id"],))
+    cursor.execute(insert_book, (payload["id"], body.attractionId, body.date, body.time, body.price))
     cnx.commit()
     return {"ok": True}
   except:
@@ -143,9 +143,9 @@ async def post_booking(payload=Depends(jwt_auth), body:Booking=Body(), cnx=Depen
 @app.get("/api/booking")
 async def get_booking(payload=Depends(jwt_auth), cnx=Depends(get_cnx)):
   cursor = cnx.cursor()
-  cursor.execute("SELECT attraction.id, attraction.name, attraction.address, attraction.images, booking.date, booking.time, booking.price FROM booking JOIN attraction ON booking.attraction_id=attraction.id WHERE booking.user_id=%s", (payload["id"],))
+  cursor.execute(select_book, (payload["id"],))
   row = cursor.fetchone()
-  if(row==None):
+  if row==None:
     return {"data": None}
   data = {
       "attraction": {
@@ -162,6 +162,6 @@ async def get_booking(payload=Depends(jwt_auth), cnx=Depends(get_cnx)):
 @app.delete("/api/booking")
 async def delete_booking(payload=Depends(jwt_auth), cnx=Depends(get_cnx)):
   cursor = cnx.cursor()
-  cursor.execute("DELETE FROM booking WHERE user_id=%s", (payload["id"],))
+  cursor.execute(delete_book, (payload["id"],))
   cnx.commit()
   return JSONResponse({"ok": True})
