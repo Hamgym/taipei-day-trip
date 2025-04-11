@@ -37,9 +37,24 @@ async def validation_exception_handler(request, exc):
   return JSONResponse({"error":True, "message":"資料格式不符，請重新輸入"}, 400)
 
 
-@app.get("/api/attractions")
-async def get_attractions(page:int=Query(ge=0), keyword:str=Query(None)):
+async def get_cnx():
   cnx = cnxpool.get_connection()
+  try:
+    yield cnx
+  finally:
+    cnx.close()
+async def jwt_auth(authorization:str=Header()):
+  try:
+    [scheme, token] = authorization.split()
+    payload = jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
+    payload.pop("exp")
+    return payload
+  except:
+    return None
+
+
+@app.get("/api/attractions")
+async def get_attractions(page:int=Query(ge=0), keyword:str=Query(None), cnx=Depends(get_cnx)):
   cursor = cnx.cursor()
   limit = 12
   offset = page * limit
@@ -68,84 +83,64 @@ async def get_attractions(page:int=Query(ge=0), keyword:str=Query(None)):
     tmp["images"] = json.loads(record[9])
     data.append(tmp.copy())
     tmp.clear()
-  cnx.close()
   return {"nextPage": next_page, "data": data}
 @app.get("/api/attraction/{attractionId}")
-async def get_attraction_by_id(attractionId:int):
-  cnx = cnxpool.get_connection()
+async def get_attraction_by_id(attractionId:int, cnx=Depends(get_cnx)):
   cursor = cnx.cursor()
   cursor.execute(select_all+"WHERE attraction.id=%s", (attractionId,))
   record = cursor.fetchone()
   if record==None:
-    cnx.close()
     return JSONResponse({"error":True,"message":"景點編號不正確"}, 400)
-  else:
-    data = {}
-    data["id"] = record[0]
-    data["name"] = record[1]
-    data["category"] = record[2]
-    data["description"] = record[3]
-    data["address"] = record[4]
-    data["transport"] = record[5]
-    data["mrt"] = record[6]
-    data["lat"] = record[7]
-    data["lng"] = record[8]
-    data["images"] = json.loads(record[9])
-    cnx.close()
-    return {"data": data}
+  data = {}
+  data["id"] = record[0]
+  data["name"] = record[1]
+  data["category"] = record[2]
+  data["description"] = record[3]
+  data["address"] = record[4]
+  data["transport"] = record[5]
+  data["mrt"] = record[6]
+  data["lat"] = record[7]
+  data["lng"] = record[8]
+  data["images"] = json.loads(record[9])
+  return {"data": data}
 @app.get("/api/mrts")
-async def get_mrts():
-  cnx = cnxpool.get_connection()
+async def get_mrts(cnx=Depends(get_cnx)):
   cursor = cnx.cursor()
   cursor.execute("SELECT name FROM mrt")
   records = cursor.fetchall()
   data = []
   for record in records:
     data.append(record[0])
-  cnx.close()
   return {"data": data}
 
 
 @app.post("/api/user")
-async def post_user(user:SignUp):
-  cnx = cnxpool.get_connection()
+async def post_user(user:SignUp, cnx=Depends(get_cnx)):
   cursor = cnx.cursor()
   try:
     cursor.execute("INSERT INTO user(name, email, password) VALUE(%s, %s, %s)", (user.name, user.email, user.password))
     cnx.commit()
-    cnx.close()
     return {"ok": True}
   except:
-    cnx.close()
     return JSONResponse({"error":True, "message":"註冊失敗，重複的 Email"}, 400)
 @app.put("/api/user/auth")
-async def put_auth(user:SignIn):
-  cnx = cnxpool.get_connection()
+async def put_auth(user:SignIn, cnx=Depends(get_cnx)):
   cursor = cnx.cursor()
   cursor.execute("SELECT * FROM user WHERE email=%s AND password=%s", (user.email, user.password))
   row = cursor.fetchone()
-  if(row):
-    payload = {"id":row[0], "name":row[1], "email":row[2]}
-    payload["exp"] = datetime.now(timezone.utc) + timedelta(weeks=1)
-    encoded_jwt = jwt.encode(payload, os.getenv("JWT_SECRET"), algorithm="HS256")
-    cnx.close()
-    return {"token": encoded_jwt}
-  else:
-    cnx.close()
+  if(row==None):
     return JSONResponse({"error":True, "message":"登入失敗，帳號或密碼錯誤"}, 400)
+  payload = {"id":row[0], "name":row[1], "email":row[2]}
+  payload["exp"] = datetime.now(timezone.utc) + timedelta(weeks=1)
+  token = jwt.encode(payload, os.getenv("JWT_SECRET"), algorithm="HS256")
+  return {"token": token}
 @app.get("/api/user/auth")
-async def get_auth(authorization:str=Header()):
-  try:
-    [scheme, token] = authorization.split()
-    payload = jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
-    payload.pop("exp")
-    return {"data": payload}
-  except:
-    return {"data": None}
+async def get_auth(payload=Depends(jwt_auth)):
+  return {"data": payload}
 
 
 @app.post("/api/booking")
-async def post_booking(authorization:str=Header(), body:Booking=Body()):
+async def post_booking(authorization:str=Header(), body:Booking=Body(), cnx=Depends(get_cnx)):
   payload = {}
   try:
     [scheme, token] = authorization.split()
@@ -155,22 +150,19 @@ async def post_booking(authorization:str=Header(), body:Booking=Body()):
       "error": True,
       "message": "未登入系統，拒絕存取"
     }, 403)
-  cnx = cnxpool.get_connection()
   cursor = cnx.cursor()
   try:
     cursor.execute("DELETE FROM booking WHERE user_id=%s", (payload["id"],))
     cursor.execute("INSERT INTO booking(user_id, attraction_id, date, time, price) VALUES(%s, %s, %s, %s, %s)", (payload["id"], body.attractionId, body.date, body.time, body.price))
     cnx.commit()
-    cnx.close()
     return {"ok": True}
   except:
-    cnx.close()
     return JSONResponse({
       "error": True,
       "message": "建立失敗，輸入不正確或其他原因"
     }, 400)
 @app.get("/api/booking")
-async def get_booking(authorization:str=Header()):
+async def get_booking(authorization:str=Header(), cnx=Depends(get_cnx)):
   payload = {}
   try:
     [scheme, token] = authorization.split()
@@ -180,12 +172,10 @@ async def get_booking(authorization:str=Header()):
       "error": True,
       "message": "未登入系統，拒絕存取"
     }, 403)
-  cnx = cnxpool.get_connection()
   cursor = cnx.cursor()
   cursor.execute("SELECT attraction.id, attraction.name, attraction.address, attraction.images, booking.date, booking.time, booking.price FROM booking JOIN attraction ON booking.attraction_id=attraction.id WHERE booking.user_id=%s", (payload["id"],))
   row = cursor.fetchone()
   if(row == None):
-    cnx.close()
     return {"data": None}
   data = {
       "attraction": {
@@ -198,10 +188,9 @@ async def get_booking(authorization:str=Header()):
       "time": row[5],
       "price": row[6]
     }
-  cnx.close()
   return {"data": data}
 @app.delete("/api/booking")
-async def delete_booking(authorization:str=Header()):
+async def delete_booking(authorization:str=Header(), cnx=Depends(get_cnx)):
   payload = {}
   try:
     [scheme, token] = authorization.split()
@@ -211,9 +200,7 @@ async def delete_booking(authorization:str=Header()):
       "error": True,
       "message": "未登入系統，拒絕存取"
     }, 403)
-  cnx = cnxpool.get_connection()
   cursor = cnx.cursor()
   cursor.execute("DELETE FROM booking WHERE user_id=%s", (payload["id"],))
   cnx.commit()
-  cnx.close()
   return JSONResponse({"ok": True})
