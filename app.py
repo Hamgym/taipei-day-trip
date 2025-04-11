@@ -43,62 +43,21 @@ async def auth_error(request, exc):
 
 @app.get("/api/attractions")
 async def get_attractions(page:int=Query(ge=0), keyword:str=Query(None), cnx=Depends(get_cnx)):
-  cursor = cnx.cursor()
-  limit = 12
-  offset = page * limit
-  if keyword==None:
-    cursor.execute(select_one_page, (limit, offset))
-  else:
-    name = "%"+keyword+"%"
-    cursor.execute(select_by_keyword, (name, keyword, limit, offset))
-  records = cursor.fetchall()
-  if len(records) < 12:
-    next_page = None
-  else:
-    next_page = page + 1
-  data = []
-  tmp = {}
-  for record in records:
-    tmp["id"] = record[0]
-    tmp["name"] = record[1]
-    tmp["category"] = record[2]
-    tmp["description"] = record[3]
-    tmp["address"] = record[4]
-    tmp["transport"] = record[5]
-    tmp["mrt"] = record[6]
-    tmp["lat"] = record[7]
-    tmp["lng"] = record[8]
-    tmp["images"] = json.loads(record[9])
-    data.append(tmp.copy())
-    tmp.clear()
+  rows = fetch_attractions(cnx, page, keyword)
+  next_page = get_next_page(rows, page)
+  data = get_attractions_data(rows)
   return {"nextPage":next_page, "data":data}
 @app.get("/api/attraction/{attractionId}")
 async def get_attraction_by_id(attractionId:int, cnx=Depends(get_cnx)):
-  cursor = cnx.cursor()
-  cursor.execute(select_attraction, (attractionId,))
-  record = cursor.fetchone()
-  if record==None:
+  row = fetch_attraction(cnx, attractionId)
+  if row==None:
     return JSONResponse({"error":True, "message":"景點編號不正確"}, 400)
-  data = {}
-  data["id"] = record[0]
-  data["name"] = record[1]
-  data["category"] = record[2]
-  data["description"] = record[3]
-  data["address"] = record[4]
-  data["transport"] = record[5]
-  data["mrt"] = record[6]
-  data["lat"] = record[7]
-  data["lng"] = record[8]
-  data["images"] = json.loads(record[9])
+  data = get_attraction_data(row)
   return {"data": data}
 @app.get("/api/mrts")
 async def get_mrts(cnx=Depends(get_cnx)):
-  cursor = cnx.cursor()
-  cursor.execute(select_mrts)
-  records = cursor.fetchall()
-  data = []
-  for record in records:
-    data.append(record[0])
+  rows = fetch_mrts(cnx)
+  data = get_mrts_data(rows)
   return {"data": data}
 
 
