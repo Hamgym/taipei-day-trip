@@ -107,15 +107,15 @@ async def get_booking(payload=Depends(jwt_auth), cnx=Depends(get_cnx)):
   if row==None:
     return {"data": None}
   data = {
-      "attraction": {
-        "id": row[0],
-        "name": row[1],
-        "address": row[2],
-        "image": json.loads(row[3])[0]
-      },
-      "date": row[4],
-      "time": row[5],
-      "price": row[6]
+    "attraction": {
+      "id": row[0],
+      "name": row[1],
+      "address": row[2],
+      "image": json.loads(row[3])[0]
+    },
+    "date": row[4],
+    "time": row[5],
+    "price": row[6]
   }
   return {"data": data}
 @app.delete("/api/booking")
