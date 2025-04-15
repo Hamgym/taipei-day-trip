@@ -132,7 +132,7 @@ async def post_orders(payload=Depends(jwt_auth), body=Body(), cnx=Depends(get_cn
   cursor = cnx.cursor()
   order_id = datetime.now().strftime("%Y%m%d%H%M%S")
   try:
-    cursor.execute("INSERT INTO orders VALUES(%s, %s, %s, %s)", (order_id, payload["id"], "UNPAID", json.dumps(body)))
+    cursor.execute("INSERT INTO orders VALUES(%s, %s, %s, %s)", (order_id, payload["id"], 0, json.dumps(body)))
     cnx.commit()
   except:
     return JSONResponse({
@@ -168,19 +168,54 @@ async def post_orders(payload=Depends(jwt_auth), body=Body(), cnx=Depends(get_cn
   cursor.execute("INSERT INTO payment VALUES(%s, %s)", (order_id, json.dumps(data)))
   cnx.commit()
   if data["status"]==0:
-    cursor.execute("UPDATE orders SET status='PAID' WHERE id=%s", (order_id,))
+    cursor.execute("UPDATE orders SET status=1 WHERE id=%s", (order_id,))
     cnx.commit()
     return JSONResponse({
       "data": {
         "number": order_id,
         "payment": {
-          "status": 0,
+          "status": data["status"],
           "message": "付款成功"
         }
       }
     })
   else:
     return JSONResponse({
-      "error": True,
-      "message": f"付款失敗，訂單編號為：{order_id}"
-    }, 400)
+      "data": {
+        "number": order_id,
+        "payment": {
+          "status": data["status"],
+          "message": "付款失敗"
+        }
+      }
+    })
+@app.get("/api/order/{orderNumber}")
+async def get_order(payload=Depends(jwt_auth), orderNumber:str=Path(), cnx=Depends(get_cnx)):
+  cursor = cnx.cursor()
+  cursor.execute("SELECT * FROM orders WHERE id=%s", (orderNumber,))
+  row = cursor.fetchone()
+  if row==None:
+    return {"data": None}
+  detail = json.loads(row[3])
+  return {
+    "data": {
+    "number": row[0],
+    "price": detail["order"]["price"],
+    "trip": {
+      "attraction": {
+        "id": detail["order"]["trip"]["attraction"]["id"],
+        "name": detail["order"]["trip"]["attraction"]["name"],
+        "address": detail["order"]["trip"]["attraction"]["address"],
+        "image": detail["order"]["trip"]["attraction"]["image"]
+      },
+      "date": detail["order"]["trip"]["date"],
+      "time": detail["order"]["trip"]["time"]
+    },
+    "contact": {
+      "name": detail["order"]["contact"]["name"],
+      "email": detail["order"]["contact"]["email"],
+      "phone": detail["order"]["contact"]["phone"]
+    },
+    "status": row[2]
+    }
+  }
