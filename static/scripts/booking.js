@@ -230,12 +230,46 @@ async function load(user) {
 
 	let payBtn = document.querySelector(".confirm button");
 	payBtn.addEventListener("click", function () {
-		TPDirect.card.getPrime((result) => {
+		TPDirect.card.getPrime(async (result) => {
 			if (result.status !== 0) {
 				alert('get prime error ' + result.msg);
 				return;
 			}
 			alert('get prime 成功，prime: ' + result.card.prime);
+
+			let body = {
+				"prime": result.card.prime,
+				"order": {
+					"price": data.price,
+					"trip": {
+						"attraction": {
+							"id": data.attraction.id,
+							"name": data.attraction.name,
+							"address": data.attraction.address,
+							"image": data.attraction.image
+						},
+						"date": data.date,
+						"time": data.time
+					},
+					"contact": {
+						"name": document.querySelector("#name").value,
+						"email": document.querySelector("#email").value,
+						"phone": document.querySelector("#phone").value
+					}
+				}
+			};
+			let url = "/api/orders";
+			let request = new Request(url, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"Authorization": `Bearer ${token}`,
+				},
+				body: JSON.stringify(body),
+			});
+			let res = await fetch(request);
+			let resData = await res.json();
+			console.log(resData);
 		});
 	});
 }

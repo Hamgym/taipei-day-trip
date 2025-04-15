@@ -26,6 +26,7 @@ async def thankyou(request: Request):
 
 
 import os, json, jwt
+import urllib.request as req
 from datetime import datetime, timezone, timedelta
 from models.mysql import *
 from models.data import SignIn, SignUp, Booking
@@ -124,3 +125,62 @@ async def delete_booking(payload=Depends(jwt_auth), cnx=Depends(get_cnx)):
   cursor.execute(delete_book, (payload["id"],))
   cnx.commit()
   return JSONResponse({"ok": True})
+
+
+@app.post("/api/orders")
+async def post_orders(payload=Depends(jwt_auth), body=Body(), cnx=Depends(get_cnx)):
+  cursor = cnx.cursor()
+  order_id = datetime.now().strftime("%Y%m%d%H%M%S")
+  try:
+    cursor.execute("INSERT INTO orders VALUES(%s, %s, %s, %s)", (order_id, payload["id"], "UNPAID", json.dumps(body)))
+    cnx.commit()
+  except:
+    return JSONResponse({
+      "error": True,
+      "message": "建立失敗，輸入不正確或其他原因"
+    }, 400)
+  PRIME = "test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9"
+  PARTNER_KEY = "partner_9jjEybmuKFvrg90MVq8zOgnn4YCYwvUEQ2re2vA6C0oblkvxCDqO9fhu"
+  MERCHANT_ID = "threeseven21_FUBON_POS_2"
+  url = "https://sandbox.tappaysdk.com/tpc/payment/pay-by-prime"
+  payload = {
+    "prime": PRIME,
+    "partner_key": PARTNER_KEY,
+    "merchant_id": MERCHANT_ID,
+    "details":"Taipei Day Trip",
+    "amount": body["order"]["price"],
+    "cardholder": {
+      "phone_number": body["order"]["contact"]["phone"],
+      "name": body["order"]["contact"]["name"],
+      "email": body["order"]["contact"]["email"],
+    }
+  }
+  request = req.Request(
+    url,
+    headers={
+      "Content-Type": "application/json",
+      "x-api-key": PARTNER_KEY,
+    },
+    data=json.dumps(payload).encode(),
+  )
+  with req.urlopen(request) as res:
+    data = json.load(res)
+  cursor.execute("INSERT INTO payment VALUES(%s, %s)", (order_id, json.dumps(data)))
+  cnx.commit()
+  if data["status"]==0:
+    cursor.execute("UPDATE orders SET status='PAID' WHERE id=%s", (order_id,))
+    cnx.commit()
+    return JSONResponse({
+      "data": {
+        "number": order_id,
+        "payment": {
+          "status": 0,
+          "message": "付款成功"
+        }
+      }
+    })
+  else:
+    return JSONResponse({
+      "error": True,
+      "message": f"付款失敗，訂單編號為：{order_id}"
+    }, 400)
