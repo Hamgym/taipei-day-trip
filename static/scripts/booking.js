@@ -186,4 +186,56 @@ async function load(user) {
 
 		document.body.style.display = "block";
 	}
+
+
+	let APP_ID = 159832;
+	let APP_KEY = "app_UvdIL5m7fo6H6vJ4emZ74Z5LKL46xjeXtknFjGcV0D3PL2A0MGkq5VkAusgU";
+	TPDirect.setupSDK(APP_ID, APP_KEY, 'sandbox');
+
+
+	let fields = {
+		number: {
+			element: '#card-number',
+			placeholder: '**** **** **** ****'
+		},
+		expirationDate: {
+			element: document.getElementById('card-expiration-date'),
+			placeholder: 'MM / YY'
+		},
+		ccv: {
+			element: '#card-ccv',
+			placeholder: 'CCV'
+		}
+	}
+	let styles = {
+		'input': {
+			'font-family': '"Noto Sans TC", sans-serif',
+			'font-weight': '500',
+			'font-size': '16px',
+			'color': 'gray'
+		},
+		'.valid': {
+			'color': 'black'
+		},
+		'.invalid': {
+			'color': 'red'
+		},
+	}
+	let config = {
+		fields: fields,
+		styles: styles,
+	}
+	TPDirect.card.setup(config);
+
+
+	let payBtn = document.querySelector(".confirm button");
+	payBtn.addEventListener("click", function () {
+		TPDirect.card.getPrime((result) => {
+			if (result.status !== 0) {
+				alert('get prime error ' + result.msg);
+				return;
+			}
+			alert('get prime 成功，prime: ' + result.card.prime);
+		});
+	});
 }

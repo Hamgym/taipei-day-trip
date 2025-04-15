@@ -15,6 +15,7 @@
     media="(600px < width <= 1200px)">
   <link rel="stylesheet" href="/static/styles/booking-mobile.css"
     media="(width <= 600px)">
+  <script src="https://js.tappaysdk.com/sdk/tpdirect/v5.14.0"></script>
   <script type="module" src="/static/scripts/booking.js"></script>
 </head>
 
@@ -98,16 +99,19 @@
     <h3>信用卡付款資訊</h3>
     <div class="card">
       <label for="card">卡片號碼：</label>
-      <input type="text" name="card" id="card"
-        placeholder="**** **** **** ****">
+      <!-- <input type="text" name="card" id="card"
+        placeholder="**** **** **** ****"> -->
+      <div class="tpfield" id="card-number"></div>
     </div>
     <div class="exp">
       <label for="exp">過期時間：</label>
-      <input type="text" name="exp" id="exp" placeholder="MM / YY">
+      <!-- <input type="text" name="exp" id="exp" placeholder="MM / YY"> -->
+      <div class="tpfield" id="card-expiration-date"></div>
     </div>
     <div class="cvv">
       <label for="cvv">驗證密碼：</label>
-      <input type="text" name="cvv" id="cvv" placeholder="CVV">
+      <!-- <input type="text" name="cvv" id="cvv" placeholder="CVV"> -->
+      <div class="tpfield" id="card-ccv"></div>
     </div>
   </div>
   <div class="confirm">

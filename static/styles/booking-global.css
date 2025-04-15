@@ -451,7 +451,18 @@ body {
 	padding-bottom: 1px;
 }
 
-.payment input {
+/* .payment input {
+	width: 200px;
+	height: 100%;
+	border: 1px solid #E8E8E8;
+	border-radius: 5px;
+	color: black;
+	padding: 10px 10px 10px 9px;
+	margin-left: 1px;
+	margin-bottom: 1px;
+} */
+
+.payment .tpfield {
 	width: 200px;
 	height: 100%;
 	border: 1px solid #E8E8E8;
@@ -499,6 +510,10 @@ body {
 	font-size: 19px;
 	font-weight: 350;
 	padding-bottom: 1px;
+}
+
+.confirm button:hover {
+	cursor: pointer;
 }
 
 
