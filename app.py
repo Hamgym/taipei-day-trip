@@ -131,15 +131,21 @@ async def delete_booking(payload=Depends(jwt_auth), cnx=Depends(get_cnx)):
 async def post_orders(payload=Depends(jwt_auth), body=Body(), cnx=Depends(get_cnx)):
   cursor = cnx.cursor()
   order_id = datetime.now().strftime("%Y%m%d%H%M%S")
+  cursor.execute("SELECT * FROM orders WHERE id=%s", (order_id,))
+  row = cursor.fetchone()
+  if row!=None:
+    appended = f"-{payload["id"]%1000:03}"
+    order_id += appended
   try:
     cursor.execute("INSERT INTO orders VALUES(%s, %s, %s, %s)", (order_id, payload["id"], 0, json.dumps(body)))
     cnx.commit()
   except:
     return JSONResponse({
       "error": True,
-      "message": "建立失敗，輸入不正確或其他原因"
+      "message": "訂單建立失敗，輸入不正確或其他原因"
     }, 400)
-  PRIME = "test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9"
+  # PRIME = "test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9"
+  PRIME = body["prime"]
   PARTNER_KEY = "partner_9jjEybmuKFvrg90MVq8zOgnn4YCYwvUEQ2re2vA6C0oblkvxCDqO9fhu"
   MERCHANT_ID = "threeseven21_FUBON_POS_2"
   url = "https://sandbox.tappaysdk.com/tpc/payment/pay-by-prime"
@@ -192,7 +198,7 @@ async def post_orders(payload=Depends(jwt_auth), body=Body(), cnx=Depends(get_cn
 @app.get("/api/order/{orderNumber}")
 async def get_order(payload=Depends(jwt_auth), orderNumber:str=Path(), cnx=Depends(get_cnx)):
   cursor = cnx.cursor()
-  cursor.execute("SELECT * FROM orders WHERE id=%s", (orderNumber,))
+  cursor.execute("SELECT * FROM orders WHERE id=%s AND user_id=%s", (orderNumber, payload["id"]))
   row = cursor.fetchone()
   if row==None:
     return {"data": None}

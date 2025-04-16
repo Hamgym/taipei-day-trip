@@ -137,23 +137,23 @@ initialized.then(load);
 async function load(user) {
 	document.querySelector(".headline span").innerText = user.name;
 	let token = localStorage.getItem("token");
-	if (token) {
-		let url = `/api/order/${location.search.split("=")[1]}`;
-		let request = new Request(url, {
-			headers: { "Authorization": `Bearer ${token}` },
-		});
-		let res = await fetch(request);
-		let resData = await res.json();
-		if (resData.data == null) {
-			document.querySelector("div.message").innerText = "查無此訂單";
-			document.body.style.display = "block";
-			return;
-		}
-		if (resData.data.status != 1) {
-			document.querySelector("div.message").innerText = "付款失敗，請稍後再試";
-		}
+	let orderNumber = location.search.split("=")[1];
+	let url = `/api/order/${orderNumber}`;
+	let request = new Request(url, {
+		headers: { "Authorization": `Bearer ${token}` },
+	});
+	let res = await fetch(request);
+	let resData = await res.json();
+	if (resData.data == null) {
+		document.querySelector("div.result").innerText = `[訂單編號：${orderNumber}] 查無此訂單`;
 		document.body.style.display = "block";
-	} else {
-		location.href = "/";
+		return;
 	}
+	if (resData.data.status != 1) {
+		document.querySelector("div.result").innerText = `[訂單編號：${orderNumber}] 付款失敗，請稍後再試`;
+		document.body.style.display = "block";
+		return;
+	}
+	document.querySelector("div.result").innerText = `[訂單編號：${orderNumber}] 付款成功，感謝您的訂購！`;
+	document.body.style.display = "block";
 }

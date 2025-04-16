@@ -192,7 +192,6 @@ async function load(user) {
 	let APP_KEY = "app_UvdIL5m7fo6H6vJ4emZ74Z5LKL46xjeXtknFjGcV0D3PL2A0MGkq5VkAusgU";
 	TPDirect.setupSDK(APP_ID, APP_KEY, 'sandbox');
 
-
 	let fields = {
 		number: {
 			element: '#card-number',
@@ -227,16 +226,13 @@ async function load(user) {
 	}
 	TPDirect.card.setup(config);
 
-
 	let payBtn = document.querySelector(".confirm button");
 	payBtn.addEventListener("click", function () {
 		TPDirect.card.getPrime(async (result) => {
 			if (result.status !== 0) {
-				alert('get prime error ' + result.msg);
+				alert(`發生錯誤，請再次檢查付款資訊 (status: ${result.status})`);
 				return;
 			}
-			alert('get prime 成功，prime: ' + result.card.prime);
-
 			let body = {
 				"prime": result.card.prime,
 				"order": {
