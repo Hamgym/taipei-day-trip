@@ -1,9 +1,17 @@
-from fastapi import Header
 import jwt, os
+from datetime import datetime, timezone, timedelta
+from fastapi import Header
 
 
 class AuthError(Exception):
 	pass
+
+
+def generate_token(row):
+  payload = {"id":row[0], "name":row[1], "email":row[2]}
+  payload["exp"] = datetime.now(timezone.utc) + timedelta(weeks=1)
+  token = jwt.encode(payload, os.getenv("JWT_SECRET"), algorithm="HS256")
+  return token
 
 
 async def jwt_payload(authorization:str=Header()):
@@ -22,5 +30,3 @@ async def jwt_auth(authorization:str=Header()):
     return payload
   except:
     raise AuthError
-
-

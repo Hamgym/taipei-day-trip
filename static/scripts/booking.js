@@ -188,6 +188,7 @@ async function load(user) {
 	}
 
 
+
 	let APP_ID = 159832;
 	let APP_KEY = "app_UvdIL5m7fo6H6vJ4emZ74Z5LKL46xjeXtknFjGcV0D3PL2A0MGkq5VkAusgU";
 	TPDirect.setupSDK(APP_ID, APP_KEY, 'sandbox');

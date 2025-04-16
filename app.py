@@ -26,11 +26,11 @@ async def thankyou(request: Request):
 
 
 import os, json, jwt
-import urllib.request as req
 from datetime import datetime, timezone, timedelta
 from models.mysql import *
 from models.data import SignIn, SignUp, Booking
-from models.auth import AuthError, jwt_payload, jwt_auth
+from models.auth import AuthError, jwt_payload, jwt_auth, generate_token
+from models.tappay import *
 @app.exception_handler(PoolError)
 async def pool_error(request:Request, exc:PoolError):
   return JSONResponse({"error":True, "message":"資料庫忙線中"}, 500)
@@ -73,14 +73,10 @@ async def post_user(user:SignUp, cnx=Depends(get_cnx)):
     return JSONResponse({"error":True, "message":"註冊失敗，重複的 Email"}, 400)
 @app.put("/api/user/auth")
 async def put_auth(user:SignIn, cnx=Depends(get_cnx)):
-  cursor = cnx.cursor()
-  cursor.execute(select_user, (user.email, user.password))
-  row = cursor.fetchone()
+  row = fetch_user(cnx, user)
   if row==None:
     return JSONResponse({"error":True, "message":"登入失敗，帳號或密碼錯誤"}, 400)
-  payload = {"id":row[0], "name":row[1], "email":row[2]}
-  payload["exp"] = datetime.now(timezone.utc) + timedelta(weeks=1)
-  token = jwt.encode(payload, os.getenv("JWT_SECRET"), algorithm="HS256")
+  token = generate_token(row)
   return {"token": token}
 @app.get("/api/user/auth")
 async def get_auth(payload=Depends(jwt_payload)):
@@ -102,9 +98,7 @@ async def post_booking(payload=Depends(jwt_auth), body:Booking=Body(), cnx=Depen
     }, 400)
 @app.get("/api/booking")
 async def get_booking(payload=Depends(jwt_auth), cnx=Depends(get_cnx)):
-  cursor = cnx.cursor()
-  cursor.execute(select_book, (payload["id"],))
-  row = cursor.fetchone()
+  row = fetch_book(cnx, payload)
   if row==None:
     return {"data": None}
   data = {
@@ -130,97 +124,65 @@ async def delete_booking(payload=Depends(jwt_auth), cnx=Depends(get_cnx)):
 @app.post("/api/orders")
 async def post_orders(payload=Depends(jwt_auth), body=Body(), cnx=Depends(get_cnx)):
   cursor = cnx.cursor()
-  order_id = datetime.now().strftime("%Y%m%d%H%M%S")
-  cursor.execute("SELECT * FROM orders WHERE id=%s", (order_id,))
-  row = cursor.fetchone()
-  if row!=None:
-    appended = f"-{payload["id"]%1000:03}"
-    order_id += appended
+  order_id = generate_order_number(cnx, payload)
   try:
-    cursor.execute("INSERT INTO orders VALUES(%s, %s, %s, %s)", (order_id, payload["id"], 0, json.dumps(body)))
+    cursor.execute(insert_order, (order_id, payload["id"], 0, json.dumps(body)))
     cnx.commit()
   except:
     return JSONResponse({
       "error": True,
-      "message": "訂單建立失敗，輸入不正確或其他原因"
+      "message": "訂單建立失敗，請稍後再試"
     }, 400)
-  # PRIME = "test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9"
-  PRIME = body["prime"]
-  PARTNER_KEY = "partner_9jjEybmuKFvrg90MVq8zOgnn4YCYwvUEQ2re2vA6C0oblkvxCDqO9fhu"
-  MERCHANT_ID = "threeseven21_FUBON_POS_2"
-  url = "https://sandbox.tappaysdk.com/tpc/payment/pay-by-prime"
-  payload = {
-    "prime": PRIME,
-    "partner_key": PARTNER_KEY,
-    "merchant_id": MERCHANT_ID,
-    "details":"Taipei Day Trip",
-    "amount": body["order"]["price"],
-    "cardholder": {
-      "phone_number": body["order"]["contact"]["phone"],
-      "name": body["order"]["contact"]["name"],
-      "email": body["order"]["contact"]["email"],
-    }
-  }
-  request = req.Request(
-    url,
-    headers={
-      "Content-Type": "application/json",
-      "x-api-key": PARTNER_KEY,
-    },
-    data=json.dumps(payload).encode(),
-  )
-  with req.urlopen(request) as res:
-    data = json.load(res)
-  cursor.execute("INSERT INTO payment VALUES(%s, %s)", (order_id, json.dumps(data)))
+  res_data = pay_by_prime(body)
+  cursor.execute(insert_payment, (order_id, json.dumps(res_data)))
   cnx.commit()
-  if data["status"]==0:
-    cursor.execute("UPDATE orders SET status=1 WHERE id=%s", (order_id,))
-    cnx.commit()
+  if res_data["status"]!=0:
     return JSONResponse({
       "data": {
         "number": order_id,
         "payment": {
-          "status": data["status"],
-          "message": "付款成功"
-        }
-      }
-    })
-  else:
-    return JSONResponse({
-      "data": {
-        "number": order_id,
-        "payment": {
-          "status": data["status"],
+          "status": res_data["status"],
           "message": "付款失敗"
         }
       }
     })
+  cursor.execute(update_order, (order_id,))
+  cnx.commit()
+  return JSONResponse({
+    "data": {
+      "number": order_id,
+      "payment": {
+        "status": res_data["status"],
+        "message": "付款成功"
+      }
+    }
+  })
 @app.get("/api/order/{orderNumber}")
 async def get_order(payload=Depends(jwt_auth), orderNumber:str=Path(), cnx=Depends(get_cnx)):
   cursor = cnx.cursor()
-  cursor.execute("SELECT * FROM orders WHERE id=%s AND user_id=%s", (orderNumber, payload["id"]))
+  cursor.execute(select_order_strict, (orderNumber, payload["id"]))
   row = cursor.fetchone()
   if row==None:
     return {"data": None}
-  detail = json.loads(row[3])
+  order = json.loads(row[3])["order"]
   return {
     "data": {
     "number": row[0],
-    "price": detail["order"]["price"],
+    "price": order["price"],
     "trip": {
       "attraction": {
-        "id": detail["order"]["trip"]["attraction"]["id"],
-        "name": detail["order"]["trip"]["attraction"]["name"],
-        "address": detail["order"]["trip"]["attraction"]["address"],
-        "image": detail["order"]["trip"]["attraction"]["image"]
+        "id": order["trip"]["attraction"]["id"],
+        "name": order["trip"]["attraction"]["name"],
+        "address": order["trip"]["attraction"]["address"],
+        "image": order["trip"]["attraction"]["image"]
       },
-      "date": detail["order"]["trip"]["date"],
-      "time": detail["order"]["trip"]["time"]
+      "date": order["trip"]["date"],
+      "time": order["trip"]["time"]
     },
     "contact": {
-      "name": detail["order"]["contact"]["name"],
-      "email": detail["order"]["contact"]["email"],
-      "phone": detail["order"]["contact"]["phone"]
+      "name": order["contact"]["name"],
+      "email": order["contact"]["email"],
+      "phone": order["contact"]["phone"]
     },
     "status": row[2]
     }

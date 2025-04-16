@@ -1,6 +1,7 @@
 import os, json
 from mysql.connector.errors import PoolError
 from mysql.connector.pooling import MySQLConnectionPool
+from datetime import datetime
 
 
 dbconfig = {
@@ -28,6 +29,11 @@ select_user = "SELECT * FROM user WHERE email=%s AND password=%s"
 delete_book = "DELETE FROM booking WHERE user_id=%s"
 insert_book = "INSERT INTO booking(user_id, attraction_id, date, time, price) VALUES(%s, %s, %s, %s, %s)"
 select_book = "SELECT attraction.id, attraction.name, attraction.address, attraction.images, booking.date, booking.time, booking.price FROM booking JOIN attraction ON booking.attraction_id=attraction.id WHERE booking.user_id=%s"
+select_order = "SELECT * FROM orders WHERE id=%s"
+select_order_strict = "SELECT * FROM orders WHERE id=%s AND user_id=%s"
+insert_order = "INSERT INTO orders VALUES(%s, %s, %s, %s)"
+update_order = "UPDATE orders SET status=1 WHERE id=%s"
+insert_payment = "INSERT INTO payment VALUES(%s, %s)"
 
 
 def get_next_page(records, page):
@@ -90,3 +96,26 @@ def get_mrts_data(records):
   for record in records:
     data.append(record[0])
   return data
+def fetch_user(cnx, user):
+  cursor = cnx.cursor()
+  cursor.execute(select_user, (user.email, user.password))
+  row = cursor.fetchone()
+  return row
+def fetch_book(cnx, payload):
+  cursor = cnx.cursor()
+  cursor.execute(select_book, (payload["id"],))
+  row = cursor.fetchone()
+  return row
+
+
+def generate_serial_number() -> str:
+  return datetime.now().strftime("%Y%m%d%H%M%S")
+def generate_order_number(cnx, payload) -> str:
+  cursor = cnx.cursor()
+  order_id = generate_serial_number()
+  cursor.execute(select_order, (order_id,))
+  row = cursor.fetchone()
+  if row!=None:
+    appended = f"-{payload["id"]%1000:03}"
+    order_id += appended
+  return order_id
