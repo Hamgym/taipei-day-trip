@@ -147,6 +147,7 @@ async def post_orders(payload=Depends(jwt_auth), body=Body(), cnx=Depends(get_cn
       }
     })
   cursor.execute(update_order, (order_id,))
+  cursor.execute(delete_book, (payload["id"],))
   cnx.commit()
   return JSONResponse({
     "data": {
