@@ -1,6 +1,13 @@
+from dotenv import load_dotenv
+load_dotenv()
+
+
 from fastapi import *
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.exceptions import RequestValidationError
+from fastapi.staticfiles import StaticFiles
 app=FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 # Static Pages (Never Modify Code in this Block)
@@ -18,230 +25,166 @@ async def thankyou(request: Request):
   return FileResponse("./static/thankyou.html", media_type="text/html")
 
 
-from fastapi.staticfiles import StaticFiles
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-
-from dotenv import load_dotenv
-load_dotenv()
-import os
-from mysql.connector.pooling import MySQLConnectionPool
-dbconfig = {
-  "user": os.getenv("DB_USER"),
-  "password": os.getenv("DB_PASSWORD"),
-  "host": "localhost",
-  "database": "taipei_day_trip"
-}
-cnxpool = MySQLConnectionPool(pool_size=5, **dbconfig)
-select_all = "SELECT attraction.id, attraction.name, category, description, address, transport, mrt.name, lat, lng, images FROM attraction LEFT JOIN mrt ON attraction.mrt=mrt.id "
-
-
-from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
-from mysql.connector.errors import PoolError
+import os, json, jwt
+from datetime import datetime, timezone, timedelta
+from models.mysql import *
+from models.data import SignIn, SignUp, Booking
+from models.auth import AuthError, jwt_payload, jwt_auth, generate_token
+from models.tappay import *
 @app.exception_handler(PoolError)
 async def pool_error(request:Request, exc:PoolError):
   return JSONResponse({"error":True, "message":"資料庫忙線中"}, 500)
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
   return JSONResponse({"error":True, "message":"資料格式不符，請重新輸入"}, 400)
+@app.exception_handler(AuthError)
+async def auth_error(request, exc):
+  return JSONResponse({"error":True, "message":"未登入系統，拒絕存取"}, 403)
 
 
-from pydantic import BaseModel, Field
-from datetime import date
-from typing import Literal
-class SignIn(BaseModel):
-  email: str = Field(min_length=3)
-  password: str = Field(min_length=3)
-class SignUp(SignIn):
-  name: str = Field(min_length=1)
-class Booking(BaseModel):
-  attractionId: int = Field(ge=1)
-  date: date
-  time: Literal["morning", "afternoon"]
-  price: Literal[2000, 2500]
-
-
-import json
 @app.get("/api/attractions")
-async def get_attractions(page:int=Query(ge=0), keyword:str=Query(None)):
-  cnx = cnxpool.get_connection()
-  cursor = cnx.cursor()
-  limit = 12
-  offset = page * limit
-  if keyword == None:
-    cursor.execute(select_all+"LIMIT %s OFFSET %s", (limit, offset))
-  else:
-    name = "%"+keyword+"%"
-    cursor.execute(select_all+"WHERE attraction.name LIKE %s OR mrt.name=%s LIMIT %s OFFSET %s", (name, keyword, limit, offset))
-  records = cursor.fetchall()
-  if len(records) < 12:
-    next_page = None
-  else:
-    next_page = page + 1
-  data = []
-  tmp = {}
-  for record in records:
-    tmp["id"] = record[0]
-    tmp["name"] = record[1]
-    tmp["category"] = record[2]
-    tmp["description"] = record[3]
-    tmp["address"] = record[4]
-    tmp["transport"] = record[5]
-    tmp["mrt"] = record[6]
-    tmp["lat"] = record[7]
-    tmp["lng"] = record[8]
-    tmp["images"] = json.loads(record[9])
-    data.append(tmp.copy())
-    tmp.clear()
-  cnx.close()
-  return {"nextPage": next_page, "data": data}
+async def get_attractions(page:int=Query(ge=0), keyword:str=Query(None), cnx=Depends(get_cnx)):
+  rows = fetch_attractions(cnx, page, keyword)
+  next_page = get_next_page(rows, page)
+  data = get_attractions_data(rows)
+  return {"nextPage":next_page, "data":data}
 @app.get("/api/attraction/{attractionId}")
-async def get_attraction_by_id(attractionId: int):
-  cnx = cnxpool.get_connection()
-  cursor = cnx.cursor()
-  cursor.execute(select_all+"WHERE attraction.id=%s", (attractionId,))
-  record = cursor.fetchone()
-  if record == None:
-    cnx.close()
-    return JSONResponse({"error":True,"message":"景點編號不正確"}, 400)
-  else:
-    data = {}
-    data["id"] = record[0]
-    data["name"] = record[1]
-    data["category"] = record[2]
-    data["description"] = record[3]
-    data["address"] = record[4]
-    data["transport"] = record[5]
-    data["mrt"] = record[6]
-    data["lat"] = record[7]
-    data["lng"] = record[8]
-    data["images"] = json.loads(record[9])
-    cnx.close()
-    return {"data": data}
+async def get_attraction_by_id(attractionId:int, cnx=Depends(get_cnx)):
+  row = fetch_attraction(cnx, attractionId)
+  if row==None:
+    return JSONResponse({"error":True, "message":"景點編號不正確"}, 400)
+  data = get_attraction_data(row)
+  return {"data": data}
 @app.get("/api/mrts")
-async def get_mrts():
-  cnx = cnxpool.get_connection()
-  cursor = cnx.cursor()
-  cursor.execute("SELECT name FROM mrt")
-  records = cursor.fetchall()
-  data = []
-  for record in records:
-    data.append(record[0])
-  cnx.close()
+async def get_mrts(cnx=Depends(get_cnx)):
+  rows = fetch_mrts(cnx)
+  data = get_mrts_data(rows)
   return {"data": data}
 
 
-import jwt
-from datetime import datetime, timezone, timedelta
 @app.post("/api/user")
-async def post_user(user: SignUp):
-  cnx = cnxpool.get_connection()
+async def post_user(user:SignUp, cnx=Depends(get_cnx)):
   cursor = cnx.cursor()
   try:
-    cursor.execute("INSERT INTO user(name, email, password) VALUE(%s, %s, %s)", (user.name, user.email, user.password))
+    cursor.execute(insert_user, (user.name, user.email, user.password))
     cnx.commit()
-    cnx.close()
     return {"ok": True}
   except:
-    cnx.close()
     return JSONResponse({"error":True, "message":"註冊失敗，重複的 Email"}, 400)
 @app.put("/api/user/auth")
-async def put_auth(user: SignIn):
-  cnx = cnxpool.get_connection()
-  cursor = cnx.cursor()
-  cursor.execute("SELECT * FROM user WHERE email=%s AND password=%s", (user.email, user.password))
-  row = cursor.fetchone()
-  if(row):
-    payload = {"id":row[0], "name":row[1], "email":row[2]}
-    payload["exp"] = datetime.now(timezone.utc) + timedelta(weeks=1)
-    encoded_jwt = jwt.encode(payload, os.getenv("JWT_SECRET"), algorithm="HS256")
-    cnx.close()
-    return {"token": encoded_jwt}
-  else:
-    cnx.close()
+async def put_auth(user:SignIn, cnx=Depends(get_cnx)):
+  row = fetch_user(cnx, user)
+  if row==None:
     return JSONResponse({"error":True, "message":"登入失敗，帳號或密碼錯誤"}, 400)
+  token = generate_token(row)
+  return {"token": token}
 @app.get("/api/user/auth")
-async def get_auth(authorization:str=Header()):
-  try:
-    [scheme, token] = authorization.split()
-    payload = jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
-    payload.pop("exp")
-    return {"data": payload}
-  except:
-    return {"data": None}
+async def get_auth(payload=Depends(jwt_payload)):
+  return {"data": payload}
 
 
 @app.post("/api/booking")
-async def post_booking(authorization:str=Header(), body:Booking=Body()):
-  payload = {}
-  try:
-    [scheme, token] = authorization.split()
-    payload = jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
-  except:
-    return JSONResponse({
-      "error": True,
-      "message": "未登入系統，拒絕存取"
-    }, 403)
-  cnx = cnxpool.get_connection()
+async def post_booking(payload=Depends(jwt_auth), body:Booking=Body(), cnx=Depends(get_cnx)):
   cursor = cnx.cursor()
   try:
-    cursor.execute("DELETE FROM booking WHERE user_id=%s", (payload["id"],))
-    cursor.execute("INSERT INTO booking(user_id, attraction_id, date, time, price) VALUES(%s, %s, %s, %s, %s)", (payload["id"], body.attractionId, body.date, body.time, body.price))
+    cursor.execute(delete_book, (payload["id"],))
+    cursor.execute(insert_book, (payload["id"], body.attractionId, body.date, body.time, body.price))
     cnx.commit()
-    cnx.close()
     return {"ok": True}
   except:
-    cnx.close()
     return JSONResponse({
       "error": True,
       "message": "建立失敗，輸入不正確或其他原因"
     }, 400)
 @app.get("/api/booking")
-async def get_booking(authorization:str=Header()):
-  payload = {}
-  try:
-    [scheme, token] = authorization.split()
-    payload = jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
-  except:
-    return JSONResponse({
-      "error": True,
-      "message": "未登入系統，拒絕存取"
-    }, 403)
-  cnx = cnxpool.get_connection()
-  cursor = cnx.cursor()
-  cursor.execute("SELECT attraction.id, attraction.name, attraction.address, attraction.images, booking.date, booking.time, booking.price FROM booking JOIN attraction ON booking.attraction_id=attraction.id WHERE booking.user_id=%s", (payload["id"],))
-  row = cursor.fetchone()
-  if(row == None):
-    cnx.close()
+async def get_booking(payload=Depends(jwt_auth), cnx=Depends(get_cnx)):
+  row = fetch_book(cnx, payload)
+  if row==None:
     return {"data": None}
   data = {
-      "attraction": {
-        "id": row[0],
-        "name": row[1],
-        "address": row[2],
-        "image": json.loads(row[3])[0]
-      },
-      "date": row[4],
-      "time": row[5],
-      "price": row[6]
-    }
-  cnx.close()
+    "attraction": {
+      "id": row[0],
+      "name": row[1],
+      "address": row[2],
+      "image": json.loads(row[3])[0]
+    },
+    "date": row[4],
+    "time": row[5],
+    "price": row[6]
+  }
   return {"data": data}
 @app.delete("/api/booking")
-async def delete_booking(authorization:str=Header()):
-  payload = {}
+async def delete_booking(payload=Depends(jwt_auth), cnx=Depends(get_cnx)):
+  cursor = cnx.cursor()
+  cursor.execute(delete_book, (payload["id"],))
+  cnx.commit()
+  return JSONResponse({"ok": True})
+
+
+@app.post("/api/orders")
+async def post_orders(payload=Depends(jwt_auth), body=Body(), cnx=Depends(get_cnx)):
+  cursor = cnx.cursor()
+  order_id = generate_order_number(cnx, payload)
   try:
-    [scheme, token] = authorization.split()
-    payload = jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
+    cursor.execute(insert_order, (order_id, payload["id"], 0, json.dumps(body)))
+    cnx.commit()
   except:
     return JSONResponse({
       "error": True,
-      "message": "未登入系統，拒絕存取"
-    }, 403)
-  cnx = cnxpool.get_connection()
-  cursor = cnx.cursor()
-  cursor.execute("DELETE FROM booking WHERE user_id=%s", (payload["id"],))
+      "message": "訂單建立失敗，請稍後再試"
+    }, 400)
+  res_data = pay_by_prime(body)
+  cursor.execute(insert_payment, (order_id, json.dumps(res_data)))
   cnx.commit()
-  cnx.close()
-  return JSONResponse({"ok": True})
+  if res_data["status"]!=0:
+    return JSONResponse({
+      "data": {
+        "number": order_id,
+        "payment": {
+          "status": res_data["status"],
+          "message": "付款失敗"
+        }
+      }
+    })
+  cursor.execute(update_order, (order_id,))
+  cursor.execute(delete_book, (payload["id"],))
+  cnx.commit()
+  return JSONResponse({
+    "data": {
+      "number": order_id,
+      "payment": {
+        "status": res_data["status"],
+        "message": "付款成功"
+      }
+    }
+  })
+@app.get("/api/order/{orderNumber}")
+async def get_order(payload=Depends(jwt_auth), orderNumber:str=Path(), cnx=Depends(get_cnx)):
+  cursor = cnx.cursor()
+  cursor.execute(select_order_strict, (orderNumber, payload["id"]))
+  row = cursor.fetchone()
+  if row==None:
+    return {"data": None}
+  order = json.loads(row[3])["order"]
+  return {
+    "data": {
+    "number": row[0],
+    "price": order["price"],
+    "trip": {
+      "attraction": {
+        "id": order["trip"]["attraction"]["id"],
+        "name": order["trip"]["attraction"]["name"],
+        "address": order["trip"]["attraction"]["address"],
+        "image": order["trip"]["attraction"]["image"]
+      },
+      "date": order["trip"]["date"],
+      "time": order["trip"]["time"]
+    },
+    "contact": {
+      "name": order["contact"]["name"],
+      "email": order["contact"]["email"],
+      "phone": order["contact"]["phone"]
+    },
+    "status": row[2]
+    }
+  }

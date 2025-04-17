@@ -1,0 +1,23 @@
+.headline {
+	padding: 0 130px;
+}
+
+
+
+.result {
+	padding: 0 130px;
+}
+
+
+
+@media screen and (width <=900px) {
+	.headline {
+		padding: 0 40px;
+	}
+
+
+
+	.result {
+		padding: 0 40px;
+	}
+}

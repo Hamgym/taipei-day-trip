@@ -284,236 +284,24 @@ body {
 	margin: auto;
 	margin-top: 40px;
 	padding: 0 100px;
-	/* padding: 0 110px; */
+	padding: 0 110px;
 	font-size: 19px;
 	font-weight: 700;
 	line-height: 27px;
 }
 
-.toggle {
+/* .toggle {
 	padding: 0 110px;
-}
+} */
 
 
 
-.hidden {
+.result {
 	max-width: 1200px;
 	margin: auto;
 	margin-top: 33.5px;
 	margin-bottom: 44px;
 	padding: 0 110px;
-}
-
-
-
-.section {
-	max-width: 1200px;
-	margin: auto;
-	margin-top: 29.5px;
-	display: flex;
-	justify-content: space-between;
-	position: relative;
-	border-bottom: 1px solid #E8E8E8;
-	padding: 0 110px;
-	padding-bottom: 39.5px;
-}
-
-.section img {
-	width: 250px;
-	height: 200px;
-	object-fit: cover;
-}
-
-.section .info {
-	width: 700px;
-	margin-left: 30px;
-}
-
-.section .info p {
-	font-weight: 700;
-	height: 24px;
-	padding-top: 3px;
-	margin-top: 10px;
-}
-
-.section .info p.name {
-	color: #448899;
-	margin-top: 0;
-}
-
-.section .info p.date {
-	margin-top: 20px;
-}
-
-.section .info span {
-	font-weight: 500;
-	margin-left: 5px;
-}
-
-.section .delete {
-	background-image: url(/static/images/icon_delete.svg);
-	width: 30px;
-	height: 30px;
-	position: absolute;
-	top: 0;
-	right: 110px;
-}
-
-.section .delete:hover {
-	cursor: pointer;
-}
-
-
-
-.contact {
-	max-width: 1200px;
-	margin: auto;
-	margin-top: 40px;
-	padding: 44.5px 110px;
-	padding-top: 0;
-	border-bottom: 1px solid #E8E8E8;
-}
-
-.contact h3 {
-	font-weight: 700;
-	font-size: 19px;
-	height: 24px;
-	padding-top: 2px;
-}
-
-.contact div {
-	height: 38px;
-	display: flex;
-	align-items: center;
-}
-
-.contact .name {
-	margin-top: 20px;
-}
-
-.contact label {
-	padding-bottom: 1px;
-}
-
-.contact input {
-	width: 200px;
-	height: 100%;
-	border: 1px solid #E8E8E8;
-	border-radius: 5px;
-	color: black;
-	padding: 10px 10px 10px 9px;
-	margin-left: 1px;
-	margin-bottom: 1px;
-}
-
-.contact .email {
-	margin-top: 15px;
-}
-
-.contact .phone {
-	margin-top: 15px;
-}
-
-.contact .notice {
-	margin-top: 17.5px;
-	font-weight: 700;
-}
-
-
-
-.payment {
-	max-width: 1200px;
-	margin: auto;
-	margin-top: 40px;
-	padding: 39px 110px;
-	padding-top: 0;
-	border-bottom: 1px solid #E8E8E8;
-}
-
-.payment h3 {
-	font-weight: 700;
-	font-size: 19px;
-	height: 24px;
-	padding-top: 2px;
-}
-
-.payment div {
-	height: 38px;
-	display: flex;
-	align-items: center;
-}
-
-.payment .card {
-	margin-top: 20px;
-}
-
-.payment label {
-	padding-bottom: 1px;
-}
-
-/* .payment input {
-	width: 200px;
-	height: 100%;
-	border: 1px solid #E8E8E8;
-	border-radius: 5px;
-	color: black;
-	padding: 10px 10px 10px 9px;
-	margin-left: 1px;
-	margin-bottom: 1px;
-} */
-
-.payment .tpfield {
-	width: 200px;
-	height: 100%;
-	border: 1px solid #E8E8E8;
-	border-radius: 5px;
-	color: black;
-	padding: 10px 10px 10px 9px;
-	margin-left: 1px;
-	margin-bottom: 1px;
-}
-
-.payment .exp {
-	margin-top: 15px;
-}
-
-.payment .cvv {
-	margin-top: 15px;
-}
-
-
-
-.confirm {
-	max-width: 980px;
-	height: 100px;
-	margin: auto;
-	margin-top: 40px;
-	padding-top: 0.5px;
-	position: relative;
-}
-
-.confirm .total {
-	text-align: right;
-	font-weight: 700;
-}
-
-.confirm button {
-	background-color: #448899;
-	color: white;
-	width: 173px;
-	height: 36px;
-	border: none;
-	border-radius: 5px;
-	position: absolute;
-	right: 0;
-	top: 41.5px;
-	font-size: 19px;
-	font-weight: 350;
-	padding-bottom: 1px;
-}
-
-.confirm button:hover {
-	cursor: pointer;
 }
 
 
