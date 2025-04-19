@@ -1,7 +1,7 @@
 import os, json
 from mysql.connector.errors import PoolError
 from mysql.connector.pooling import MySQLConnectionPool
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 
 dbconfig = {
@@ -109,7 +109,7 @@ def fetch_book(cnx, payload):
 
 
 def generate_serial_number() -> str:
-  return datetime.now().strftime("%Y%m%d%H%M%S")
+  return datetime.now(timezone(timedelta(hours=8))).strftime("%Y%m%d%H%M%S")
 def generate_order_number(cnx, payload) -> str:
   cursor = cnx.cursor()
   order_id = generate_serial_number()
