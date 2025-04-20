@@ -11,6 +11,10 @@ dbconfig = {
 cnxpool = MySQLConnectionPool(pool_size=5, **dbconfig)
 
 
+def get_next_page(page, rows):
+  if len(rows) < 12:
+    return None
+  return page + 1
 def generate_serial_number() -> str:
   return datetime.now(timezone(timedelta(hours=8))).strftime("%Y%m%d%H%M%S")
 def generate_order_number(payload) -> str:
