@@ -61,8 +61,8 @@ class CRUD:
         select = select_all+"LIMIT %s OFFSET %s"
         cursor.execute(select, (limit, offset))
       else:
-        select = select_all+"WHERE attraction.name LIKE %s OR mrt.name=%s LIMIT %s OFFSET %s"
         name = "%"+keyword+"%"
+        select = select_all+"WHERE attraction.name LIKE %s OR mrt.name=%s LIMIT %s OFFSET %s"
         cursor.execute(select, (name, keyword, limit, offset))
       rows = cursor.fetchall()
       return rows
