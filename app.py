@@ -1,11 +1,15 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-
 from fastapi import *
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
+from models.auth import *
+from models.data import *
+from models.mysql import *
+from models.tappay import *
+from models.utility import *
 app=FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -25,10 +29,6 @@ async def thankyou(request: Request):
   return FileResponse("./static/thankyou.html", media_type="text/html")
 
 
-from models.mysql import *
-from models.data import SignIn, SignUp, Booking
-from models.auth import AuthError, jwt_payload, jwt_auth, generate_token
-from models.tappay import pay_by_prime
 @app.exception_handler(PoolError)
 async def pool_error(request:Request, exc:PoolError):
   return JSONResponse({"error":True, "message":"資料庫忙線中"}, 500)
@@ -104,20 +104,17 @@ async def delete_booking(payload=Depends(jwt_auth)):
 
 
 @app.post("/api/orders")
-async def post_orders(payload=Depends(jwt_auth), body=Body(), cnx=Depends(get_cnx)):
-  cursor = cnx.cursor()
-  order_id = generate_order_number(cnx, payload)
+async def post_orders(payload=Depends(jwt_auth), body=Body()):
+  order_id = generate_order_number(payload)
   try:
-    cursor.execute(insert_order, (order_id, payload["id"], 0, json.dumps(body)))
-    cnx.commit()
+    CRUD.create_order(order_id, payload, body)
   except:
     return JSONResponse({
       "error": True,
       "message": "訂單建立失敗，請稍後再試"
     }, 400)
   res_data = pay_by_prime(body)
-  cursor.execute(insert_payment, (order_id, json.dumps(res_data)))
-  cnx.commit()
+  CRUD.create_payment(order_id, res_data)
   if res_data["status"]!=0:
     return JSONResponse({
       "data": {
@@ -128,9 +125,8 @@ async def post_orders(payload=Depends(jwt_auth), body=Body(), cnx=Depends(get_cn
         }
       }
     })
-  cursor.execute(update_order, (order_id,))
-  cursor.execute(delete_book, (payload["id"],))
-  cnx.commit()
+  CRUD.update_order(order_id)
+  CRUD.delete_book(payload)
   return JSONResponse({
     "data": {
       "number": order_id,
@@ -141,32 +137,9 @@ async def post_orders(payload=Depends(jwt_auth), body=Body(), cnx=Depends(get_cn
     }
   })
 @app.get("/api/order/{orderNumber}")
-async def get_order(payload=Depends(jwt_auth), orderNumber:str=Path(), cnx=Depends(get_cnx)):
-  cursor = cnx.cursor()
-  cursor.execute(select_order_strict, (orderNumber, payload["id"]))
-  row = cursor.fetchone()
+async def get_order(payload=Depends(jwt_auth), orderNumber:str=Path()):
+  row = CRUD.read_order(orderNumber, payload)
   if row==None:
     return {"data": None}
-  order = json.loads(row[3])["order"]
-  return {
-    "data": {
-    "number": row[0],
-    "price": order["price"],
-    "trip": {
-      "attraction": {
-        "id": order["trip"]["attraction"]["id"],
-        "name": order["trip"]["attraction"]["name"],
-        "address": order["trip"]["attraction"]["address"],
-        "image": order["trip"]["attraction"]["image"]
-      },
-      "date": order["trip"]["date"],
-      "time": order["trip"]["time"]
-    },
-    "contact": {
-      "name": order["contact"]["name"],
-      "email": order["contact"]["email"],
-      "phone": order["contact"]["phone"]
-    },
-    "status": row[2]
-    }
-  }
+  data = get_order_data(row)
+  return {"data": data}
