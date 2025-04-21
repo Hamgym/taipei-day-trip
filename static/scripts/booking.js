@@ -234,6 +234,8 @@ async function load(user) {
 				alert(`發生錯誤，請再次檢查付款資訊 (status: ${result.status})`);
 				return;
 			}
+			document.querySelector(".mask").style.display = "block";
+			document.querySelector(".loading").style.display = "block";
 			let body = {
 				"prime": result.card.prime,
 				"order": {
