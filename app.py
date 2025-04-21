@@ -5,10 +5,10 @@ from fastapi import *
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
+from utils.pay import *
+from utils.auth import *
+from models.rdb import *
 from models.data import *
-from models.mysql import *
-from utilities.auth import *
-from utilities.tappay import *
 app=FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
