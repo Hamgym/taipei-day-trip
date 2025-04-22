@@ -236,6 +236,7 @@ async function load(user) {
 			}
 			document.querySelector(".mask").style.display = "block";
 			document.querySelector(".loading").style.display = "block";
+			let url = "/api/orders";
 			let body = {
 				"prime": result.card.prime,
 				"order": {
@@ -257,7 +258,6 @@ async function load(user) {
 					}
 				}
 			};
-			let url = "/api/orders";
 			let request = new Request(url, {
 				method: "POST",
 				headers: {
