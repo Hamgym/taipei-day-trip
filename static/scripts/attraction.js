@@ -210,8 +210,11 @@ async function load() {
 
 	let timeDelta = (8 + 24) * 60 * 60 * 1000;
 	let tomorrow = new Date(Date.now() + timeDelta);
+	let halfYear = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000);
 	let date = document.querySelector("#date");
+	date.setAttribute("value", tomorrow.toISOString().slice(0, 10));
 	date.setAttribute("min", tomorrow.toISOString().slice(0, 10));
+	date.setAttribute("max", halfYear.toISOString().slice(0, 10));
 
 	let price = document.querySelector(".price p:last-child");
 	let radioFirst = document.querySelector("#morning");

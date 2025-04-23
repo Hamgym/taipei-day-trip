@@ -434,6 +434,7 @@ section {
 
 
 .booking input[type="date"] {
+	width: 130px;
 	height: 100%;
 	margin-left: 6px;
 	border: none;
