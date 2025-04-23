@@ -229,6 +229,11 @@ async function load(user) {
 
 	let payBtn = document.querySelector(".confirm button");
 	payBtn.addEventListener("click", function () {
+		let contactForm = document.querySelector(".contact form");
+		if (!contactForm.checkValidity()) {
+			contactForm.reportValidity();
+			return;
+		}
 		TPDirect.card.getPrime(async (result) => {
 			if (result.status !== 0) {
 				alert(`發生錯誤，請再次檢查付款資訊 (status: ${result.status})`);

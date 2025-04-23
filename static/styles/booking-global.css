@@ -436,6 +436,10 @@ body {
 	margin-bottom: 1px;
 }
 
+.contact input:not(:focus):invalid {
+	color: red;
+}
+
 .contact .email {
 	margin-top: 15px;
 }
