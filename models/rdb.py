@@ -2,6 +2,7 @@ import os, json
 from mysql.connector.errors import PoolError
 from mysql.connector.pooling import MySQLConnectionPool
 from datetime import datetime, timezone, timedelta
+from passlib.context import CryptContext
 dbconfig = {
   "user": os.getenv("DB_USER"),
   "password": os.getenv("DB_PASSWORD"),
@@ -9,6 +10,7 @@ dbconfig = {
   "database": "taipei_day_trip"
 }
 cnxpool = MySQLConnectionPool(pool_size=5, **dbconfig)
+pwd_context = CryptContext(schemes=["bcrypt"])
 
 
 def get_next_page(page, rows):
@@ -34,6 +36,7 @@ class CRUD:
   def create_user(user):
     with cnxpool.get_connection() as cnx:
       cursor = cnx.cursor()
+      user.password = pwd_context.hash(user.password)
       insert = "INSERT INTO user(name, email, password) VALUE(%s, %s, %s)"
       cursor.execute(insert, (user.name, user.email, user.password))
       cnx.commit()
@@ -87,9 +90,12 @@ class CRUD:
   def read_user(user):
     with cnxpool.get_connection() as cnx:
       cursor = cnx.cursor()
-      select = "SELECT * FROM user WHERE email=%s AND password=%s"
-      cursor.execute(select, (user.email, user.password))
+      select = "SELECT * FROM user WHERE email=%s"
+      cursor.execute(select, (user.email,))
       row = cursor.fetchone()
+      verified = pwd_context.verify(user.password, row[3])
+      if not verified:
+        return None
       return row
   def read_book(payload):
     with cnxpool.get_connection() as cnx:
