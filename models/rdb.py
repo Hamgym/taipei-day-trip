@@ -93,6 +93,8 @@ class CRUD:
       select = "SELECT * FROM user WHERE email=%s"
       cursor.execute(select, (user.email,))
       row = cursor.fetchone()
+      if row==None:
+        return None
       verified = pwd_context.verify(user.password, row[3])
       if not verified:
         return None
