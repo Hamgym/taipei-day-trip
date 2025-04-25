@@ -15,6 +15,26 @@ class Booking(BaseModel):
   date: date
   time: Literal["morning", "afternoon"]
   price: Literal[2000, 2500]
+class Attraction(BaseModel):
+  id: int = Field(ge=1)
+  name: str
+  address: str
+  image: str
+class Trip(BaseModel):
+  attraction: Attraction
+  date: str = Field(pattern=r"\d{4}-\d{2}-\d{2}")
+  time: Literal["morning", "afternoon"]
+class Contact(BaseModel):
+  name: str = Field(min_length=1)
+  email: str = Field(pattern=r"^[^\s@]+@[^\s@]+$")
+  phone: str = Field(pattern=r"09\d{8}")
+class Order(BaseModel):
+  price: Literal[2000, 2500]
+  trip: Trip
+  contact: Contact
+class OrderBody(BaseModel):
+  prime: str
+  order: Order
 
 
 def get_attractions_data(rows):

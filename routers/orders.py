@@ -7,16 +7,17 @@ from models.data import *
 router = APIRouter()
 
 @router.post("/api/orders")
-async def post_orders(payload=Depends(jwt_auth), body=Body()):
+async def post_orders(payload=Depends(jwt_auth), body:OrderBody=Body()):
   order_id = generate_order_number(payload)
+  body_dict = body.model_dump()
   try:
-    CRUD.create_order(order_id, payload, body)
+    CRUD.create_order(order_id, payload, body_dict)
   except:
     return JSONResponse({
       "error": True,
       "message": "訂單建立失敗，請稍後再試"
     }, 400)
-  res_data = pay_by_prime(body)
+  res_data = pay_by_prime(body_dict)
   CRUD.create_payment(order_id, res_data)
   if res_data["status"]!=0:
     return JSONResponse({
