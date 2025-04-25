@@ -1,11 +1,12 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 from datetime import date
 from typing import Literal
 import json
 
 
 class SignIn(BaseModel):
-  email: str = Field(min_length=3)
+  # email: EmailStr
+  email: str = Field(pattern=r"^[^\s@]+@[^\s@]+$")
   password: str = Field(min_length=3)
 class SignUp(SignIn):
   name: str = Field(min_length=1)
