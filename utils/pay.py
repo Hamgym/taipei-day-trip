@@ -1,7 +1,5 @@
 import os, json
 import urllib.request as req
-
-
 PARTNER_KEY = os.getenv("PARTNER_KEY")
 MERCHANT_ID = "threeseven21_FUBON_POS_2"
 PAYMENT_URL = "https://sandbox.tappaysdk.com/tpc/payment/pay-by-prime"

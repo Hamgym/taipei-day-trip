@@ -266,8 +266,14 @@ body {
 	color: #666666;
 }
 
+.navigation a:hover {
+	background-color: #E8E8E8;
+	border-radius: 5px;
+	transition: all 0.5s;
+}
+
 .navigation .sign {
-	width: 91px;
+	/* width: 91px; */
 	padding: 10px;
 	line-height: 12px;
 	color: #666666;
@@ -275,6 +281,9 @@ body {
 
 .navigation .sign:hover {
 	cursor: pointer;
+	background-color: #E8E8E8;
+	border-radius: 5px;
+	transition: all 0.5s;
 }
 
 
@@ -302,6 +311,7 @@ body {
 	margin-top: 33.5px;
 	margin-bottom: 44px;
 	padding: 0 110px;
+	line-height: initial;
 }
 
 

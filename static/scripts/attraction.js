@@ -208,6 +208,14 @@ async function load() {
 	let transport = document.querySelector(".info p:nth-child(5)");
 	transport.innerText = data.transport;
 
+	let timeDelta = (8 + 24) * 60 * 60 * 1000;
+	let tomorrow = new Date(Date.now() + timeDelta);
+	let halfYear = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000);
+	let date = document.querySelector("#date");
+	date.setAttribute("value", tomorrow.toISOString().slice(0, 10));
+	date.setAttribute("min", tomorrow.toISOString().slice(0, 10));
+	date.setAttribute("max", halfYear.toISOString().slice(0, 10));
+
 	let price = document.querySelector(".price p:last-child");
 	let radioFirst = document.querySelector("#morning");
 	radioFirst.addEventListener("click", () => {
@@ -240,27 +248,33 @@ async function load() {
 			time = "afternoon"
 			price = 2500;
 		};
-		if (date && time) {
-			let token = localStorage.getItem("token");
-			let url = "/api/booking";
-			let request = new Request(url, {
-				method: "POST",
-				headers: {
-					"Authorization": `Bearer ${token}`,
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					"attractionId": attractionId,
-					"date": date,
-					"time": time,
-					"price": price
-				}),
-			});
-			let res = await fetch(request);
-			let resData = await res.json();
-			if (resData.ok) {
-				location.href = "/booking";
-			}
+		if (!date) {
+			alert("請選擇日期");
+			return;
+		}
+		if (!time) {
+			alert("請選擇時間");
+			return;
+		}
+		let token = localStorage.getItem("token");
+		let url = "/api/booking";
+		let request = new Request(url, {
+			method: "POST",
+			headers: {
+				"Authorization": `Bearer ${token}`,
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				"attractionId": attractionId,
+				"date": date,
+				"time": time,
+				"price": price
+			}),
+		});
+		let res = await fetch(request);
+		let resData = await res.json();
+		if (resData.ok) {
+			location.href = "/booking";
 		}
 	});
 }
