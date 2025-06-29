@@ -6,7 +6,7 @@ from passlib.context import CryptContext
 dbconfig = {
   "user": os.getenv("DB_USER"),
   "password": os.getenv("DB_PASSWORD"),
-  "host": "localhost",
+  "host": os.getenv("DB_HOST"),
   "database": "taipei_day_trip"
 }
 cnxpool = MySQLConnectionPool(pool_size=5, **dbconfig)
