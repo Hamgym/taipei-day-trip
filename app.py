@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from utils.auth import *
 from models.rdb import *
 from routers import attractions, bookings, orders, users
-app=FastAPI(root_path="/trip")
+app=FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
