@@ -6,10 +6,10 @@ from passlib.context import CryptContext
 dbconfig = {
   "user": os.getenv("DB_USER"),
   "password": os.getenv("DB_PASSWORD"),
-  "host": "localhost",
-  "database": "taipei_day_trip"
+  "host": os.getenv("DB_HOST"),
+  "database": os.getenv("DB_NAME")
 }
-cnxpool = MySQLConnectionPool(pool_size=5, **dbconfig)
+cnxpool = MySQLConnectionPool(pool_name="taipei" ,pool_size=5, **dbconfig)
 pwd_context = CryptContext(schemes=["bcrypt"])
 
 
